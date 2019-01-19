@@ -13,8 +13,10 @@ public class SubjectResourceAssembler {
 
 	public SubjectResource toResource(Subject subject) {
 		SubjectResource sr = new SubjectResource(subject);
-		sr.add(linkTo(PersonController.class).slash(subject.getPerson().getId()).slash("subjects").slash(subject.getSubjectName()).withSelfRel());
-		sr.add(linkTo(PersonController.class).slash(subject.getPerson().getId()).withRel("person"));
+		if(subject.getPerson() != null) {
+			sr.add(linkTo(PersonController.class).slash(subject.getPerson().getId()).slash("subjects").slash(subject.getSubjectName()).withSelfRel());
+			sr.add(linkTo(PersonController.class).slash(subject.getPerson().getId()).withRel("person"));
+		}
 		return sr;
 	}
 

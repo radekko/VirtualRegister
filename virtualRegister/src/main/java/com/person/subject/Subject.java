@@ -50,6 +50,14 @@ public class Subject {
 	public Person getPerson() {
 		return person;
 	}
+	public void setPerson(Person person) {
+		this.person = person;
+	}
+	public Subject(Long id, String subjectName, List<Double> degree) {
+		this.id = id;
+		this.subjectName = subjectName;
+		this.degrees = degree;
+	}
 	public Subject(String subjectName, List<Double> degree) {
 		this.subjectName = subjectName;
 		this.degrees = degree;
@@ -59,6 +67,4 @@ public class Subject {
 	}
 	public Subject() {
 	}
-	
-	
 }

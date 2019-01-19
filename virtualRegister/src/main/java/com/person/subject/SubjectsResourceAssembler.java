@@ -30,7 +30,7 @@ public class SubjectsResourceAssembler {
 		return resources;
 	}
 	
-	public SubjectResource toResource(Subject person) {
-		return sra.toResource(person);
+	public SubjectResource toResource(Subject subject) {
+		return sra.toResource(subject);
 	}
 }

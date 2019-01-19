@@ -4,6 +4,8 @@ import java.net.URI;
 import java.net.URISyntaxException;
 import java.util.function.Function;
 
+import javax.transaction.Transactional;
+
 import org.springframework.hateoas.Resources;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.MediaType;
@@ -21,29 +23,29 @@ import com.person.subject.NewSubject;
 import com.person.subject.Subject;
 
 @RestController
+@Transactional
 @RequestMapping(value = "/persons")
 public class PersonController {
-	
-	private final PersonsResourceAssembler personsResource;
-	private final PersonRepository personRepository;
-	
 
-	public PersonController(PersonsResourceAssembler personsResource, PersonRepository personRepository) {
-		this.personsResource = personsResource;
+	private final PersonsResourceAssembler personsResourceAssemb;
+	private final PersonRepository personRepository;
+
+	public PersonController(PersonsResourceAssembler personsResourceAssemb, PersonRepository personRepository) {
+		this.personsResourceAssemb = personsResourceAssemb;
 		this.personRepository = personRepository;
 	}
 
 	@GetMapping(produces = MediaType.APPLICATION_JSON_VALUE)
 	public HttpEntity<Resources<PersonResource>> getAllPersons() {
-		Resources<PersonResource> resources = personsResource.toGlobalResource(personRepository.findAll());
+		Resources<PersonResource> resources = personsResourceAssemb.toGlobalResource(personRepository.findAll());
 		return ResponseEntity.ok().body(resources);
 	}
 	
-	@GetMapping(value="/{id}",produces = MediaType.APPLICATION_JSON_VALUE)
-	public HttpEntity<PersonResource> getPerson(@PathVariable Long id) throws EntityNotExistException {
-		PersonResource pr = personRepository.findById(id)
-				.map(personsResource::toResource)
-				.orElseThrow(() -> new EntityNotExistException(id));
+	@GetMapping(value="/{personId}",produces = MediaType.APPLICATION_JSON_VALUE)
+	public HttpEntity<PersonResource> getPerson(@PathVariable Long personId) throws EntityNotExistException {
+		PersonResource pr = personRepository.findById(personId)
+				.map(personsResourceAssemb::toResource)
+				.orElseThrow(() -> new EntityNotExistException(personId));
 		
 		return ResponseEntity.ok().body(pr);
 	}
@@ -51,7 +53,7 @@ public class PersonController {
 	@PostMapping
 	public HttpEntity<Void> newEmployee(@RequestBody NewPerson newPerson) throws URISyntaxException {
 		Person p = personRepository.save(new Person(newPerson.getFirstName(),newPerson.getLastName()));
-		PersonResource res = personsResource.toResource(p);
+		PersonResource res = personsResourceAssemb.toResource(p);
 		return ResponseEntity.created(new URI(res.getId().expand().getHref())).build();
 	}
 	

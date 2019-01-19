@@ -2,6 +2,8 @@ package com.person.subject;
 
 import java.util.function.Function;
 
+import javax.transaction.Transactional;
+
 import org.springframework.hateoas.Resources;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.MediaType;
@@ -16,6 +18,7 @@ import org.springframework.web.bind.annotation.RestController;
 import com.core.EntityNotExistException;
 
 @RestController
+@Transactional
 @RequestMapping(value = "/persons/{personId}/subjects")
 public class SubjectController {
 	
@@ -40,7 +43,7 @@ public class SubjectController {
 		SubjectResource sr = subjectRepository.findByPersonIdAndSubjectName(personId, subjectName)
 											  .map(subjectResourceAssemb::toResource)
 											  .orElseThrow(() -> new EntityNotExistException(personId));
-		
+
 		return ResponseEntity.ok().body(sr);
 	}
 	

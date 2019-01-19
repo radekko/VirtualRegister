@@ -43,9 +43,9 @@ public class PersonControllerTest {
 	@Test
 	public void testGetAllPersons() throws Exception {
 		List<Person> list = Arrays.asList(
-				new Person(1,"Frodo", "Baggins"),
-				new Person(2,"Bilbo", "Baggins"),
-				new Person(3,"Gandalf", "Grey"));
+				new Person(1,"Jan", "Nowak"),
+				new Person(2,"Dariusz", "Kowalski"),
+				new Person(3,"Mariusz", "Szary"));
 		
 		given(personRepository.findAll()).willReturn(list);
 
@@ -54,17 +54,17 @@ public class PersonControllerTest {
 			.andExpect(status().isOk())
 			.andExpect(header().string(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON_UTF8_VALUE))
 			.andExpect(jsonPath("$._embedded.personResources[0].ident").value(1))
-			.andExpect(jsonPath("$._embedded.personResources[0].firstName").value("Frodo"))
-			.andExpect(jsonPath("$._embedded.personResources[0].lastName").value("Baggins"))
+			.andExpect(jsonPath("$._embedded.personResources[0].firstName").value("Jan"))
+			.andExpect(jsonPath("$._embedded.personResources[0].lastName").value("Nowak"))
 			.andExpect(jsonPath("$._embedded.personResources[0]._links.self.href").value("http://localhost/persons/1"))
 			.andExpect(jsonPath("$._embedded.personResources[0]._links.persons.href").value("http://localhost/persons"))
-			.andExpect(jsonPath("$._embedded.personResources[1].firstName").value("Bilbo"))
+			.andExpect(jsonPath("$._embedded.personResources[1].firstName").value("Dariusz"))
 			.andReturn();
 	}
 	
 	@Test
 	public void testGetPerson() throws Exception {
-		Optional<Person> p = Optional.of(new Person(1,"Gandalf", "Grey"));
+		Optional<Person> p = Optional.of(new Person(1,"Dariusz", "Kowalski"));
 		given(personRepository.findById(Mockito.any(Long.class))).willReturn(p);
 
 		mvc.perform(get("/persons/{id}",1).accept(MediaType.APPLICATION_JSON_VALUE))
@@ -72,8 +72,8 @@ public class PersonControllerTest {
 			.andExpect(status().isOk())
 			.andExpect(header().string(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON_UTF8_VALUE))
 			.andExpect(jsonPath("$.ident").value(1))
-			.andExpect(jsonPath("$.firstName").value("Gandalf"))
-			.andExpect(jsonPath("$.lastName").value("Grey"))
+			.andExpect(jsonPath("$.firstName").value("Dariusz"))
+			.andExpect(jsonPath("$.lastName").value("Kowalski"))
 			.andExpect(jsonPath("$._links.self.href").value("http://localhost/persons/1"))
 			.andExpect(jsonPath("$._links.persons.href").value("http://localhost/persons"))
 			.andReturn();
