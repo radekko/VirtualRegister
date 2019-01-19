@@ -51,7 +51,7 @@ public class PersonController {
 	}
 	
 	@PostMapping
-	public HttpEntity<Void> newEmployee(@RequestBody NewPerson newPerson) throws URISyntaxException {
+	public HttpEntity<Void> createNewPerson(@RequestBody NewPerson newPerson) throws URISyntaxException {
 		Person p = personRepository.save(new Person(newPerson.getFirstName(),newPerson.getLastName()));
 		PersonResource res = personsResourceAssemb.toResource(p);
 		return ResponseEntity.created(new URI(res.getId().expand().getHref())).build();
