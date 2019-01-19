@@ -54,7 +54,11 @@ public class Subject {
 		this.subjectName = subjectName;
 		this.degrees = degree;
 	}
+	public Subject(String subjectName) {
+		this.subjectName = subjectName;
+	}
 	public Subject() {
 	}
+	
 	
 }

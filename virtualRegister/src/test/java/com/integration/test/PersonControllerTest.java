@@ -115,4 +115,14 @@ public class PersonControllerTest {
 				.andExpect(status().isNotFound());
 	}
 	
+	@Test
+	public void testPutAddSubjectToPerson() throws Exception {
+		Optional<Person> p = Optional.of(new Person(1,"Marek", "Zegarek"));
+		given(personRepository.findById(Mockito.any(Long.class))).willReturn(p);
+		final String newSubjectRequestJson = "{ \"subjectName\" : \"math\"  }";
+
+		mvc.perform(put("/persons/{id}/subjects",1).contentType(MediaType.APPLICATION_JSON_VALUE)
+				.content(newSubjectRequestJson))
+				.andExpect(status().isNoContent());
+	}
 }

@@ -17,6 +17,8 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.core.EntityNotExistException;
+import com.person.subject.NewSubject;
+import com.person.subject.Subject;
 
 @RestController
 @RequestMapping(value = "/persons")
@@ -52,13 +54,34 @@ public class PersonController {
 		PersonResource res = personsResource.toResource(p);
 		return ResponseEntity.created(new URI(res.getId().expand().getHref())).build();
 	}
+	
+	@PutMapping(value="/{personId}/subjects")
+	public HttpEntity<Void> addSubjectToPerson(
+			@PathVariable Long personId, @RequestBody NewSubject newSubject) throws EntityNotExistException{
 		
-	@PutMapping(value="/{id}")
-	public HttpEntity<Void> replacePerson(@RequestBody NewPerson newPerson, @PathVariable Long id) throws EntityNotExistException {
-		personRepository.findById(id)
+		Person p = personRepository.findById(personId).orElseThrow(() -> new EntityNotExistException(personId));
+		
+		if(checkIfSubjectNotExist(p, newSubject))
+			addSubjectToPersonAndStore(p, newSubject);
+			
+		return ResponseEntity.noContent().build();
+	}
+
+	private boolean checkIfSubjectNotExist(Person p, NewSubject newSubject) {
+		return p.getSubjects().stream().noneMatch(s -> s.getSubjectName().equals(newSubject.getSubjectName()));
+	}
+
+	private void addSubjectToPersonAndStore(Person p, NewSubject newSubject) {
+		p.addSubjects(new Subject(newSubject.getSubjectName()));
+		personRepository.save(p);
+	}
+
+	@PutMapping(value="/{personId}")
+	public HttpEntity<Void> replacePerson(@RequestBody NewPerson newPerson, @PathVariable Long personId) throws EntityNotExistException {
+		personRepository.findById(personId)
 						.map(updatePerson(newPerson)
 						.andThen(storePerson()))
-						.orElseThrow(() -> new EntityNotExistException(id));
+						.orElseThrow(() -> new EntityNotExistException(personId));
 		
 		return ResponseEntity.noContent().build();
 	}

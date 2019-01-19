@@ -37,11 +37,11 @@ public class Application
 			Person person2 = new Person("Marcin", "Kowalski");
 			
 			person.addSubjects(subject);
-//			person.addSubjects(subject2);
-//			person2.addSubjects(subject3);
+			person.addSubjects(subject2);
+			person2.addSubjects(subject3);
 			
 			repository.save(person);
-//			repository.save(person2);
+			repository.save(person2);
 		};
     }
 }

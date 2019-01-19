@@ -43,10 +43,10 @@ public class SubjectController {
 		
 		return ResponseEntity.ok().body(sr);
 	}
-
+	
 	@PutMapping(value="/{subjectName}")
 	public HttpEntity<Void> addDegreeToSubjectForChoosenPerson(
-			@PathVariable Long personId, @PathVariable String subjectName, @RequestBody Degrees degree) throws EntityNotExistException {
+			@PathVariable Long personId, @PathVariable String subjectName, @RequestBody Degree degree) throws EntityNotExistException {
 
 		subjectRepository.findByPersonIdAndSubjectName(personId, subjectName)
 						 .map(updateSubject(degree)
@@ -56,11 +56,11 @@ public class SubjectController {
 		return ResponseEntity.noContent().build();
 	}
 	
-	private Function<Subject,Subject> updateSubject(Degrees degree) {
+	private Function<Subject,Subject> updateSubject(Degree degree) {
 		return s -> addDegresToSubject(degree, s);
 	}
 
-	private Subject addDegresToSubject(Degrees degree, Subject s) {
+	private Subject addDegresToSubject(Degree degree, Subject s) {
 		s.addDegree(degree.getDegree());
 		return s;
 	}

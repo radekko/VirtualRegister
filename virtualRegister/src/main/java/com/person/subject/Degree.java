@@ -1,6 +1,6 @@
 package com.person.subject;
 
-public class Degrees {
+public class Degree {
 
 	private double degree;
 
