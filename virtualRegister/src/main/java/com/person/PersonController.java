@@ -68,16 +68,7 @@ public class PersonController {
 			
 		return ResponseEntity.noContent().build();
 	}
-
-	private boolean checkIfSubjectNotExist(Person p, NewSubject newSubject) {
-		return p.getSubjects().stream().noneMatch(s -> s.getSubjectName().equals(newSubject.getSubjectName()));
-	}
-
-	private void addSubjectToPersonAndStore(Person p, NewSubject newSubject) {
-		p.addSubjects(new Subject(newSubject.getSubjectName()));
-		personRepository.save(p);
-	}
-
+	
 	@PutMapping(value="/{personId}")
 	public HttpEntity<Void> replacePerson(@RequestBody NewPerson newPerson, @PathVariable Long personId) throws EntityNotExistException {
 		personRepository.findById(personId)
@@ -88,6 +79,15 @@ public class PersonController {
 		return ResponseEntity.noContent().build();
 	}
 	
+	private boolean checkIfSubjectNotExist(Person p, NewSubject newSubject) {
+		return p.getSubjects().stream().noneMatch(s -> s.getSubjectName().equals(newSubject.getSubjectName()));
+	}
+
+	private void addSubjectToPersonAndStore(Person p, NewSubject newSubject) {
+		p.addSubjects(new Subject(newSubject.getSubjectName()));
+		personRepository.save(p);
+	}
+
 	private Function<Person, Person> updatePerson(NewPerson newPerson) {
 		return p -> {
 			p.setFirstName(newPerson.getFirstName());
