@@ -15,11 +15,11 @@ public class PersonResource extends ResourceSupport{
 	
 	public PersonResource() {
 	}
-	public PersonResource(long id, String firstName, String lastName,List<SubjectResource> z) {
+	public PersonResource(long id, String firstName, String lastName,List<SubjectResource> subjectResource) {
 		this.id = id;
 		this.firstName = firstName;
 		this.lastName = lastName;
-		this.subjectResource = z;
+		this.subjectResource = subjectResource;
 	}
 
 	public long getIdent() {

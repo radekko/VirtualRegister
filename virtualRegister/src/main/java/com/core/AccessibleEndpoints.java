@@ -1,56 +1,59 @@
 package com.core;
 
-import java.util.Collections;
-import java.util.List;
 import java.util.Optional;
 import java.util.Set;
 import java.util.TreeSet;
 import java.util.function.BinaryOperator;
-import java.util.stream.Collectors;
-import java.util.stream.Stream;
 
 import org.apache.commons.collections4.MultiValuedMap;
 import org.apache.commons.collections4.multimap.HashSetValuedHashMap;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.method.HandlerMethod;
+import org.springframework.web.servlet.mvc.condition.PatternsRequestCondition;
+import org.springframework.web.servlet.mvc.condition.RequestMethodsRequestCondition;
 import org.springframework.web.servlet.mvc.method.RequestMappingInfo;
 
 public class AccessibleEndpoints {
-	private MultiValuedMap<String, Optional<RequestMethod>> endpoints = new HashSetValuedHashMap<String, Optional<RequestMethod>>();
+	private MultiValuedMap<String, InfoAboutMethod> endpoints = new HashSetValuedHashMap<String, InfoAboutMethod>();
 
 	public void storeEndpoint(RequestMappingInfo r, HandlerMethod h) {
-		String singlePath = extractPathToEndpoint(r);
-		Optional<RequestMethod> httpMethodName = extractEndpointMethod(r);
+		String pathToEndpoint = extractPathToEndpoint(r.getPatternsCondition());
+		Optional<RequestMethod> httpMethodName = extractEndpointMethod(r.getMethodsCondition());
+		String methodName = h.getMethod().getName();
 		
-		endpoints.put(singlePath, httpMethodName);
+		InfoAboutMethod infoAboutMethod = new InfoAboutMethod(httpMethodName,methodName);
+		endpoints.put(pathToEndpoint, infoAboutMethod);
 	}
 	
 	public void printAllEndpoints() {
 		Set<String> keySet = new TreeSet<>(endpoints.keySet());
 		keySet.stream().forEach(this::printOneEndpoint);
+		System.out.println();
 	}
 
-	private Optional<RequestMethod> extractEndpointMethod(RequestMappingInfo r) {
-		return r.getMethodsCondition().getMethods()
+	private Optional<RequestMethod> extractEndpointMethod(RequestMethodsRequestCondition rm) {
+		return rm.getMethods()
 				.stream()
 				.reduce(tooManyElementsException());
 	}
 
-	private String extractPathToEndpoint(RequestMappingInfo r) {
-		return r.getPatternsCondition().getPatterns()
+	private String extractPathToEndpoint(PatternsRequestCondition pr) {
+		return pr.getPatterns()
 				.stream()
 				.reduce(tooManyElementsException())
 				.get();
 	}
 	
     private void printOneEndpoint(String pathToEndpoint) {
-        List<RequestMethod> listWithMethods = endpoints.get(pathToEndpoint)
-    		  					  .stream()
-    		  					  .flatMap(o -> o.map(Stream::of).orElseGet(Stream::empty))
-    		  					  .collect(Collectors.toList());
-    	
-    	Collections.sort(listWithMethods);
-    	System.out.format("%-45s| %s \n", pathToEndpoint, listWithMethods);
+    	System.out.println(pathToEndpoint);
+    	System.out.println("---------------------------------------------------------------------");
+    	endpoints.get(pathToEndpoint).stream().sorted().forEach(this::print);
+    	System.out.println();
+    }
+    
+    private void print(InfoAboutMethod i) {
+    	String httpMethodName = i.getRequestMethod().map(r -> r.toString()).orElse("");
+    	System.out.format("%-5s| %s \n", httpMethodName, i.getMethodName());
     }
 	
 	private <T> BinaryOperator<T> tooManyElementsException() {
