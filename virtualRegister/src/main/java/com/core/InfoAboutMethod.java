@@ -28,8 +28,17 @@ public class InfoAboutMethod implements Comparable<InfoAboutMethod>{
 
 	@Override
 	public int compareTo(InfoAboutMethod p) {
-		if(p.requestMethod.isPresent())
-			return -p.requestMethod.get().compareTo(this.requestMethod.get());
-		return 0;
+		if(isTheSame(p) || !this.requestMethod.isPresent())
+			return 0;
+
+		return p.requestMethod.map(this::compare).orElse(0);
+	}
+
+	private boolean isTheSame(InfoAboutMethod p) {
+		return p.requestMethod.equals(this.requestMethod);
+	}
+	
+	private int compare(RequestMethod rm) {
+		return -rm.compareTo(this.requestMethod.get());
 	}
 }
