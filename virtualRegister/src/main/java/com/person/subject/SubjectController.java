@@ -1,9 +1,13 @@
 package com.person.subject;
 
+import static org.springframework.hateoas.mvc.ControllerLinkBuilder.linkTo;
+import static org.springframework.hateoas.mvc.ControllerLinkBuilder.methodOn;
+
 import java.util.function.Function;
 
 import javax.transaction.Transactional;
 
+import org.springframework.hateoas.Link;
 import org.springframework.hateoas.Resources;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.MediaType;
@@ -23,16 +27,17 @@ import com.core.EntityNotExistException;
 public class SubjectController {
 	
 	private final SubjectRepository subjectRepository;
-	private final SubjectsResourceAssembler subjectResourceAssemb;
+	private final SubjectResourceAssembler subjectResourceAssemb;
 	
-	public SubjectController(SubjectRepository subjectRepository, SubjectsResourceAssembler subjectResourceAssemb) {
+	public SubjectController(SubjectRepository subjectRepository, SubjectResourceAssembler subjectResourceAssemb) {
 		this.subjectRepository = subjectRepository;
 		this.subjectResourceAssemb = subjectResourceAssemb;
 	}
 	
 	@GetMapping(produces = MediaType.APPLICATION_JSON_VALUE)
 	public HttpEntity<Resources<SubjectResource>> getSubjectForPerson(@PathVariable Long personId) throws EntityNotExistException {
-		Resources<SubjectResource> resources = subjectResourceAssemb.toGlobalResource(subjectRepository.findByPersonId(personId));
+		Link linkToSubjectCollection = linkTo(methodOn(SubjectController.class).getSubjectForPerson(personId)).withSelfRel();
+		Resources<SubjectResource> resources = subjectResourceAssemb.toGlobalResource(subjectRepository.findByPersonId(personId),linkToSubjectCollection);
 		return ResponseEntity.ok().body(resources);
 	}
 

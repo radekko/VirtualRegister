@@ -15,19 +15,21 @@ public class PersonResource extends ResourceSupport{
 	
 	public PersonResource() {
 	}
-	public PersonResource(long id, String firstName, String lastName,List<SubjectResource> subjectResource) {
-		this.id = id;
-		this.firstName = firstName;
-		this.lastName = lastName;
+	public PersonResource(Person p, List<SubjectResource> subjectResource) {
+		this.id = p.getId();
+		this.firstName = p.getFirstName();
+		this.lastName = p.getLastName();
 		this.subjectResource = subjectResource;
 	}
 
 	public long getIdent() {
 		return id;
 	}
+	
 	public String getFirstName() {
 		return firstName;
 	}
+	
 	public String getLastName() {
 		return lastName;
 	}

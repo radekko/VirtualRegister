@@ -1,11 +1,15 @@
 package com.person;
 
+import static org.springframework.hateoas.mvc.ControllerLinkBuilder.linkTo;
+import static org.springframework.hateoas.mvc.ControllerLinkBuilder.methodOn;
+
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.util.function.Function;
 
 import javax.transaction.Transactional;
 
+import org.springframework.hateoas.Link;
 import org.springframework.hateoas.Resources;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.MediaType;
@@ -27,17 +31,18 @@ import com.person.subject.Subject;
 @RequestMapping(value = "/persons")
 public class PersonController {
 
-	private final PersonsResourceAssembler personsResourceAssemb;
+	private final PersonResourceAssembler personsResourceAssemb;
 	private final PersonRepository personRepository;
 
-	public PersonController(PersonsResourceAssembler personsResourceAssemb, PersonRepository personRepository) {
+	public PersonController(PersonResourceAssembler personsResourceAssemb, PersonRepository personRepository) {
 		this.personsResourceAssemb = personsResourceAssemb;
 		this.personRepository = personRepository;
 	}
 
 	@GetMapping(produces = MediaType.APPLICATION_JSON_VALUE)
 	public HttpEntity<Resources<PersonResource>> getAllPersons() {
-		Resources<PersonResource> resources = personsResourceAssemb.toGlobalResource(personRepository.findAll());
+		Link linkToPersonCollection = linkTo(methodOn(PersonController.class).getAllPersons()).withSelfRel();
+		Resources<PersonResource> resources = personsResourceAssemb.toGlobalResource(personRepository.findAll(),linkToPersonCollection);
 		return ResponseEntity.ok().body(resources);
 	}
 	
