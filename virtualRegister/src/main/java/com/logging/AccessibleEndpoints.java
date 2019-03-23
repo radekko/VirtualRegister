@@ -7,12 +7,14 @@ import java.util.function.BinaryOperator;
 
 import org.apache.commons.collections4.MultiValuedMap;
 import org.apache.commons.collections4.multimap.HashSetValuedHashMap;
+import org.springframework.stereotype.Component;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.method.HandlerMethod;
 import org.springframework.web.servlet.mvc.condition.PatternsRequestCondition;
 import org.springframework.web.servlet.mvc.condition.RequestMethodsRequestCondition;
 import org.springframework.web.servlet.mvc.method.RequestMappingInfo;
 
+@Component
 public class AccessibleEndpoints {
 	private MultiValuedMap<String, InfoAboutMethod> endpoints = new HashSetValuedHashMap<String, InfoAboutMethod>();
 
@@ -52,8 +54,8 @@ public class AccessibleEndpoints {
     }
     
     private void print(InfoAboutMethod i) {
-    	String httpMethodName = i.getRequestMethod().map(r -> r.toString()).orElse("");
-    	System.out.format("%-5s| %s \n", httpMethodName, i.getMethodName());
+    	String httpMethodName = i.getRequestMethod().map(Enum::toString).orElse("");
+    	System.out.format("%-5s| %s \n", httpMethodName, i.getServerSideMethodName());
     }
 	
 	private <T> BinaryOperator<T> tooManyElementsException() {

@@ -19,7 +19,7 @@ public class InfoAboutMethod implements Comparable<InfoAboutMethod>{
 	public void setRequestMethod(Optional<RequestMethod> requestMethod) {
 		this.requestMethod = requestMethod;
 	}
-	public String getMethodName() {
+	public String getServerSideMethodName() {
 		return methodName;
 	}
 	public void setMethodName(String methodName) {

@@ -15,7 +15,7 @@ import com.person.Person;
 import com.person.PersonRepository;
 import com.person.subject.Subject;
 
-@ComponentScan({"com.person","com.core"})
+@ComponentScan({"com.person","com.core","com.logging"})
 @EnableJpaRepositories("com.person")
 @EntityScan("com.person")
 @SpringBootApplication

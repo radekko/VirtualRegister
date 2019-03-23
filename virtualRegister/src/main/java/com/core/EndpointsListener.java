@@ -13,20 +13,20 @@ import com.logging.AccessibleEndpoints;
 @Component
 public class EndpointsListener implements ApplicationListener<ApplicationEvent> {
 
-	private final AccessibleEndpoints ae;
+	private final AccessibleEndpoints accessibleEndpoints;
 	
-    public EndpointsListener() {
-    	this.ae = new AccessibleEndpoints();
+    public EndpointsListener(AccessibleEndpoints accessibleEndpoints) {
+    	this.accessibleEndpoints = accessibleEndpoints;
     }
 
 	@Override
     public void onApplicationEvent(ApplicationEvent event) {
         if (event instanceof ContextRefreshedEvent) {
             ApplicationContext applicationContext = ((ContextRefreshedEvent) event).getApplicationContext();
-            applicationContext.getBean(RequestMappingHandlerMapping.class).getHandlerMethods().forEach(ae::storeEndpoint);
+            applicationContext.getBean(RequestMappingHandlerMapping.class).getHandlerMethods().forEach(accessibleEndpoints::storeEndpoint);
         }
         if(event instanceof ApplicationStartedEvent) {
-        	ae.printAllEndpoints();
+        	accessibleEndpoints.printAllEndpoints();
         }
     }
 }
