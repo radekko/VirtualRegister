@@ -2,30 +2,51 @@ package com.person.subject;
 
 import static org.springframework.hateoas.mvc.ControllerLinkBuilder.linkTo;
 
+import org.springframework.hateoas.Link;
 import org.springframework.stereotype.Component;
 
-import com.core.CollectionResources;
+import com.core.EmbeddedCollectionResources;
 import com.person.PersonController;
 
 @Component
-public class SubjectResourceAssembler implements CollectionResources<SubjectResource,Subject>{
+public class SubjectResourceAssembler implements EmbeddedCollectionResources<SubjectResource, Subject>{
 
-	public SubjectResourceAssembler() {}
+	private Long personId;
 	
-	public SubjectResource toResource(Subject subject) {
+	public SubjectResourceAssembler() {}
+
+	@Override
+	public SubjectResource entitytoResource(Subject subject) {
+		this.personId = subject.getPerson().getId();
 		SubjectResource sr = new SubjectResource(subject);
-		if(ifPersonsAreAssignedToSubject(subject)) 
-			addPersonLinks(subject, sr);
+		if(ifSubjectIsAssignedToPerson(subject)) 
+			addLinksToSingleResource(subject, sr);
 		
 		return sr;
 	}
 
-	private boolean ifPersonsAreAssignedToSubject(Subject subject) {
+	@Override
+	public Link linkToGlobalCollection() {
+		return linkTo(PersonController.class).slash(personId).slash("subjects").withRel("subjectsForPerson");
+	}
+	
+	@Override
+	public Link linkToParent() {
+		return linkTo(PersonController.class).slash(personId).withRel("person");
+	}
+
+	private boolean ifSubjectIsAssignedToPerson(Subject subject) {
 		return subject.getPerson() != null;
 	}
 
-	private void addPersonLinks(Subject subject, SubjectResource sr) {
-		sr.add(linkTo(PersonController.class).slash(subject.getPerson().getId()).slash("subjects").slash(subject.getSubjectName()).withSelfRel());
-		sr.add(linkTo(PersonController.class).slash(subject.getPerson().getId()).withRel("person"));
+	private void addLinksToSingleResource(Subject subject, SubjectResource sr) {
+		sr.add(linkToSelf(subject));    	// persons/1/subjects/English - self
+		sr.add(linkToParent());				// persons/1				  - person
+		sr.add(linkToGlobalCollection());	// persons/1/subjects		  - subjectsForPerson
 	}
+
+	private Link linkToSelf(Subject subject) {
+		return linkTo(PersonController.class).slash(personId).slash("subjects").slash(subject.getSubjectName()).withSelfRel();
+	}
+
 }

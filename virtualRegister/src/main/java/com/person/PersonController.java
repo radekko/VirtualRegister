@@ -41,15 +41,14 @@ public class PersonController {
 
 	@GetMapping(produces = MediaType.APPLICATION_JSON_VALUE)
 	public HttpEntity<Resources<PersonResource>> getAllPersons() {
-		Link linkToPersonCollection = linkTo(methodOn(PersonController.class).getAllPersons()).withSelfRel();
-		Resources<PersonResource> resources = personsResourceAssemb.toGlobalResource(personRepository.findAll(),linkToPersonCollection);
+		Resources<PersonResource> resources = personsResourceAssemb.prepareListResources(personRepository.findAll());
 		return ResponseEntity.ok().body(resources);
 	}
 	
 	@GetMapping(value="/{personId}",produces = MediaType.APPLICATION_JSON_VALUE)
 	public HttpEntity<PersonResource> getPerson(@PathVariable Long personId) throws EntityNotExistException {
 		PersonResource pr = personRepository.findById(personId)
-				.map(personsResourceAssemb::toResource)
+				.map(personsResourceAssemb::entitytoResource)
 				.orElseThrow(() -> new EntityNotExistException(personId));
 		
 		return ResponseEntity.ok().body(pr);
@@ -58,7 +57,7 @@ public class PersonController {
 	@PostMapping
 	public HttpEntity<Void> createNewPerson(@RequestBody NewPerson newPerson) throws URISyntaxException {
 		Person p = personRepository.save(new Person(newPerson.getFirstName(),newPerson.getLastName()));
-		PersonResource res = personsResourceAssemb.toResource(p);
+		PersonResource res = personsResourceAssemb.entitytoResource(p);
 		return ResponseEntity.created(new URI(res.getId().expand().getHref())).build();
 	}
 	
