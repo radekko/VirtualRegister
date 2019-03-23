@@ -1,4 +1,4 @@
-package com.core;
+package com.exceptions;
 
 public class EntityNotExistException extends Exception{
 

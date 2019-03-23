@@ -8,6 +8,8 @@ import org.springframework.context.event.ContextRefreshedEvent;
 import org.springframework.stereotype.Component;
 import org.springframework.web.servlet.mvc.method.annotation.RequestMappingHandlerMapping;
 
+import com.logging.AccessibleEndpoints;
+
 @Component
 public class EndpointsListener implements ApplicationListener<ApplicationEvent> {
 

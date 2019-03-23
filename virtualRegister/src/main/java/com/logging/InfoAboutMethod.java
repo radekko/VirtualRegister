@@ -1,4 +1,4 @@
-package com.core;
+package com.logging;
 
 import java.util.Optional;
 

@@ -5,6 +5,9 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 
+import com.exceptions.EntityNotExistException;
+import com.exceptions.ExceptionObject;
+
 @ControllerAdvice
 public class GlobalControllerExceptionHandler {
 	

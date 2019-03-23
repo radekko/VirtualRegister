@@ -5,7 +5,7 @@ import static org.springframework.hateoas.mvc.ControllerLinkBuilder.linkTo;
 import org.springframework.hateoas.Link;
 import org.springframework.stereotype.Component;
 
-import com.core.EmbeddedCollectionResources;
+import com.core.resources.EmbeddedCollectionResources;
 import com.person.PersonController;
 
 @Component

@@ -9,8 +9,8 @@ import java.util.stream.Collectors;
 import org.springframework.hateoas.Link;
 import org.springframework.stereotype.Component;
 
-import com.core.EntityNotExistException;
-import com.core.WrapperCollectionResources;
+import com.core.resources.WrapperCollectionResources;
+import com.exceptions.EntityNotExistException;
 import com.person.subject.SubjectResource;
 import com.person.subject.SubjectResourceAssembler;
 
@@ -18,7 +18,7 @@ import com.person.subject.SubjectResourceAssembler;
 public class PersonResourceAssembler implements WrapperCollectionResources<PersonResource, Person>{
 	
 	private final SubjectResourceAssembler subjectResourceAssemb;
-
+	
 	public PersonResourceAssembler(SubjectResourceAssembler subjectResourceAssemb) {
 		this.subjectResourceAssemb = subjectResourceAssemb;
 	}
@@ -32,7 +32,7 @@ public class PersonResourceAssembler implements WrapperCollectionResources<Perso
 		addLinks(person, personResource);
 		return personResource;
 	}
-
+	
 	@Override
 	public Link linkToGlobalCollection() {
 		return linkTo(methodOn(PersonController.class).getAllPersons()).withRel("persons");
@@ -43,7 +43,7 @@ public class PersonResourceAssembler implements WrapperCollectionResources<Perso
 		catch (EntityNotExistException e) {throw new RuntimeException("Person not exist");}
 		personResource.add(linkToGlobalCollection());
 	}
-
+	
 	private Link linkToSelf(Person person) throws EntityNotExistException {
 		return linkTo(methodOn(PersonController.class).getPerson(person.getId())).withSelfRel();
 	}
