@@ -1,128 +1,74 @@
 package com.integration.test;
 
-import static org.mockito.BDDMockito.given;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put;
-import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.header;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
+import static com.jayway.restassured.RestAssured.when;
+import static org.hamcrest.Matchers.equalTo;
+import static org.hamcrest.Matchers.hasItems;
 
-import java.util.Arrays;
 import java.util.List;
-import java.util.Optional;
 
+import org.junit.Before;
 import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.mockito.Mockito;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
-import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.boot.test.mock.mockito.MockBean;
-import org.springframework.http.HttpHeaders;
-import org.springframework.http.MediaType;
-import org.springframework.test.context.junit4.SpringRunner;
-import org.springframework.test.web.servlet.MockMvc;
 
-import com.core.Application;
+import com.jayway.restassured.http.ContentType;
 import com.person.Person;
-import com.person.PersonRepository;
 
-@RunWith(SpringRunner.class)
-@SpringBootTest(classes = Application.class)
-@AutoConfigureMockMvc
-public class PersonControllerTest {
+public class PersonControllerTest extends AbstractControllerTest {
 
-	@Autowired
-	private MockMvc mvc;
-
-	@MockBean
-	private PersonRepository personRepository;
+	private String collectionPrefix = "_embedded.personResources[%1$s].";
+	private String links = "_links.";
+	private String linkToSelf = links+"self.href";
+	private String linkToPersonsCollection = links+"persons.href";
+	private long firstPersonId;
+	private long secondPersonId;
 	
+	@Before
+	public void setUp() {
+		super.setUp();
+		List<Person> list = personRepository.findAll();
+		firstPersonId = list.get(0).getId();
+		secondPersonId = list.get(1).getId();
+	}
+
 	@Test
-	public void testGetAllPersons() throws Exception {
-		List<Person> list = Arrays.asList(
-				new Person(1,"Jan", "Nowak"),
-				new Person(2,"Dariusz", "Kowalski"),
-				new Person(3,"Mariusz", "Szary"));
+	public void getAllPersons() {
+		when().get("/persons")
+		.then().statusCode(200)
+		.and().contentType(ContentType.JSON)
+		.and().body(getCollectionElem("firstName",0), equalTo("Jan"))
+		.and().body(getCollectionElem("lastName",0), equalTo("Nowak"))
+		.and().body(getCollectionElem("subjectResource.subjectName",0), hasItems("Math","English"))
+		.and().body(getCollectionElem(linkToSelf,0), equalTo(getSingleLink(firstPersonId)))
+		.and().body(getCollectionElem(linkToPersonsCollection,0), equalTo(getCollectionLink()))
 		
-		given(personRepository.findAll()).willReturn(list);
+		.and().body(getCollectionElem("firstName",1), equalTo("Marcin"))
+		.and().body(getCollectionElem("lastName",1), equalTo("Kowalski"))
+		.and().body(getCollectionElem("subjectResource.subjectName",1), hasItems("English"))
+		.and().body(getCollectionElem(linkToSelf,1), equalTo(getSingleLink(secondPersonId)))
+		.and().body(getCollectionElem(linkToPersonsCollection,1), equalTo(getCollectionLink()));
+	}
+	
+	@Test
+	public void getPerson() {
+		when().get("/persons/{id}",firstPersonId)
+		.then().statusCode(200)
+		.and().contentType(ContentType.JSON)
+		.and().body("firstName", equalTo("Jan"))
+		.and().body("lastName", equalTo("Nowak"))
+		.and().body("subjectResource.subjectName", hasItems("Math","English"))
+		.and().body(linkToSelf, equalTo(getSingleLink(firstPersonId)))
+		.and().body(linkToPersonsCollection, equalTo(getCollectionLink()));
+	}
 
-		mvc.perform(get("/persons").accept(MediaType.APPLICATION_JSON_VALUE))
-			.andDo(print())
-			.andExpect(status().isOk())
-			.andExpect(header().string(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON_UTF8_VALUE))
-			.andExpect(jsonPath("$._embedded.personResources[0].ident").value(1))
-			.andExpect(jsonPath("$._embedded.personResources[0].firstName").value("Jan"))
-			.andExpect(jsonPath("$._embedded.personResources[0].lastName").value("Nowak"))
-			.andExpect(jsonPath("$._embedded.personResources[0]._links.self.href").value("http://localhost/persons/1"))
-			.andExpect(jsonPath("$._embedded.personResources[0]._links.persons.href").value("http://localhost/persons"))
-			.andExpect(jsonPath("$._embedded.personResources[1].firstName").value("Dariusz"))
-			.andReturn();
+	private String getCollectionElem(String paramName, int pathToResource) {
+		return String.format(collectionPrefix+paramName, pathToResource);
 	}
-	
-	@Test
-	public void testGetPerson() throws Exception {
-		Optional<Person> p = Optional.of(new Person(1,"Dariusz", "Kowalski"));
-		given(personRepository.findById(Mockito.any(Long.class))).willReturn(p);
 
-		mvc.perform(get("/persons/{id}",1).accept(MediaType.APPLICATION_JSON_VALUE))
-			.andDo(print())
-			.andExpect(status().isOk())
-			.andExpect(header().string(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON_UTF8_VALUE))
-			.andExpect(jsonPath("$.ident").value(1))
-			.andExpect(jsonPath("$.firstName").value("Dariusz"))
-			.andExpect(jsonPath("$.lastName").value("Kowalski"))
-			.andExpect(jsonPath("$._links.self.href").value("http://localhost/persons/1"))
-			.andExpect(jsonPath("$._links.persons.href").value("http://localhost/persons"))
-			.andReturn();
+	private String getSingleLink(long personId) {
+		return getCollectionLink() + "/" + personId;
 	}
 	
-	@Test
-	public void testPostPerson() throws Exception {
-		Person p = new Person(1,"Marek","Zegarek");
-		given(personRepository.save(Mockito.any(Person.class))).willReturn(p);
-		
-		final String newAuthorRequestJson = "{ \"firstName\" : \"Marek\", \"lastName\" : \"Zegarek\"  }";
-		mvc.perform(post("/persons").contentType(MediaType.APPLICATION_JSON_VALUE)
-				.content(newAuthorRequestJson))
-				.andDo(print())
-				.andExpect(header().string("Location", "http://localhost/persons/1"))
-				.andExpect(status().isCreated());
+	private String getCollectionLink() {
+		return getHost() + "/persons";
 	}
-	
-	@Test
-	public void testPutPerson() throws Exception {
-		Optional<Person> p = Optional.of(new Person(1,"Marek", "Zegarek"));
-		given(personRepository.findById(Mockito.any(Long.class))).willReturn(p);
-		given(personRepository.save(Mockito.any(Person.class))).willReturn(p.get());
-		
-		final String newAuthorRequestJson = "{ \"firstName\" : \"Marek\", \"lastName\" : \"Zegarek\"  }";
-		mvc.perform(put("/persons/{id}",1).contentType(MediaType.APPLICATION_JSON_VALUE)
-				.content(newAuthorRequestJson))
-				.andExpect(status().isNoContent());
-	}
-	
-	@Test
-	public void testPutPersonThrowException() throws Exception {
-		Optional<Person> p = Optional.empty();
-		given(personRepository.findById(Mockito.any(Long.class))).willReturn(p);
-		
-		final String newAuthorRequestJson = "{ \"firstName\" : \"Marek\", \"lastName\" : \"Zegarek\"  }";
-		mvc.perform(put("/persons/{id}",1).contentType(MediaType.APPLICATION_JSON_VALUE)
-				.content(newAuthorRequestJson))
-				.andExpect(status().isNotFound());
-	}
-	
-	@Test
-	public void testPutAddSubjectToPerson() throws Exception {
-		Optional<Person> p = Optional.of(new Person(1,"Marek", "Zegarek"));
-		given(personRepository.findById(Mockito.any(Long.class))).willReturn(p);
-		final String newSubjectRequestJson = "{ \"subjectName\" : \"math\"  }";
 
-		mvc.perform(put("/persons/{id}/subjects",1).contentType(MediaType.APPLICATION_JSON_VALUE)
-				.content(newSubjectRequestJson))
-				.andExpect(status().isNoContent());
-	}
 }

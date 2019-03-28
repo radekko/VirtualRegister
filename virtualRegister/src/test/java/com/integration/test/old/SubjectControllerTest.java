@@ -1,4 +1,4 @@
-package com.integration.test;
+package com.integration.test.old;
 
 import static org.mockito.BDDMockito.given;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
@@ -49,7 +49,6 @@ public class SubjectControllerTest {
 			.andDo(print())
 			.andExpect(status().isOk())
 			.andExpect(header().string(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON_UTF8_VALUE))
-			.andExpect(jsonPath("$._embedded.subjectResources[0].ident").value(1))
 			.andExpect(jsonPath("$._embedded.subjectResources[0].subjectName").value("Math"))
 			.andExpect(jsonPath("$._embedded.subjectResources[0].degree").isArray())
 			.andExpect(jsonPath("$._embedded.subjectResources[0].degree[0]").value(1.0))
@@ -70,7 +69,6 @@ public class SubjectControllerTest {
 			.andDo(print())
 			.andExpect(status().isOk())
 			.andExpect(header().string(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON_UTF8_VALUE))
-			.andExpect(jsonPath("$.ident").value(1))
 			.andExpect(jsonPath("$.subjectName").value("Math"))
 			.andExpect(jsonPath("$.degree").isArray())
 			.andExpect(jsonPath("$.degree[0]").value(1.0))
