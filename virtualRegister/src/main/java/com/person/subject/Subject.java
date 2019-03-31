@@ -3,6 +3,7 @@ package com.person.subject;
 import java.util.ArrayList;
 import java.util.List;
 
+import javax.persistence.CascadeType;
 import javax.persistence.ElementCollection;
 import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
@@ -23,7 +24,7 @@ public class Subject {
 	@ElementCollection
 	private List<Double> degrees = new ArrayList<>();
 	
-	@ManyToOne
+	@ManyToOne(cascade = CascadeType.ALL)
 	private Person person;
 	
 	public Long getId() {
@@ -62,7 +63,7 @@ public class Subject {
 		this.subjectName = subjectName;
 		this.degrees = degree;
 	}
-	public Subject(String subjectName) {
+	public Subject(String subjectName, Person person) {
 		this.subjectName = subjectName;
 	}
 	public Subject() {

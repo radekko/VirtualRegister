@@ -61,19 +61,22 @@ public class PersonController {
 	public HttpEntity<Void> addSubjectToPerson(
 			@PathVariable Long personId, @RequestBody NewSubject newSubject) throws EntityNotExistException{
 		
-		Person p = personRepository.findById(personId).orElseThrow(() -> new EntityNotExistException(personId));
-		
-		if(checkIfSubjectNotExist(p, newSubject))
-			addSubjectToPersonAndStore(p, newSubject);
-			
+		Person person = personRepository.findById(personId).orElseThrow(() -> new EntityNotExistException(personId));
+		if(checkIfSubjectNotExist(person, newSubject)) {
+			addNewSubjectToPerson(person, newSubject);
+			personRepository.save(person);
+		}
+
 		return ResponseEntity.noContent().build();
 	}
 	
 	@PutMapping(value="/{personId}")
-	public HttpEntity<Void> replacePerson(@RequestBody NewPerson newPerson, @PathVariable Long personId) throws EntityNotExistException {
+	public HttpEntity<Void> renamePerson(@RequestBody NewPerson newPerson, @PathVariable Long personId) throws EntityNotExistException {
 		personRepository.findById(personId)
-						.map(updatePerson(newPerson)
-						.andThen(storePerson()))
+						.map(
+								changePersonDetails(newPerson)
+								.andThen(updateChangedPerson())
+						)
 						.orElseThrow(() -> new EntityNotExistException(personId));
 		
 		return ResponseEntity.noContent().build();
@@ -83,12 +86,11 @@ public class PersonController {
 		return p.getSubjects().stream().noneMatch(s -> s.getSubjectName().equals(newSubject.getSubjectName()));
 	}
 
-	private void addSubjectToPersonAndStore(Person p, NewSubject newSubject) {
-		p.addSubjects(new Subject(newSubject.getSubjectName()));
-		personRepository.save(p);
+	private void addNewSubjectToPerson(Person p, NewSubject newSubject) {
+		p.addSubjects(new Subject(newSubject.getSubjectName(),p));
 	}
 
-	private Function<Person, Person> updatePerson(NewPerson newPerson) {
+	private Function<Person, Person> changePersonDetails(NewPerson newPerson) {
 		return p -> {
 			p.setFirstName(newPerson.getFirstName());
 			p.setLastName(newPerson.getLastName());
@@ -96,7 +98,7 @@ public class PersonController {
 		};
 	}
 	
-	private Function<Person, Person> storePerson() {
+	private Function<Person, Person> updateChangedPerson() {
 		return personRepository :: save;
 	}
 	

@@ -75,6 +75,10 @@ public class Person  {
 	public void addSubjects(Subject subject) {
 		this.subjects.add(subject);
 	}
-	
-	
+
+	@Override
+	public String toString() {
+		return "id=" + id + ", firstName=" + firstName + ", lastName=" + lastName + ", subjects=" + subjects
+				+ "]";
+	}
 }
