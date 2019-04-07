@@ -17,7 +17,7 @@ import org.junit.Before;
 import org.junit.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 
-import com.jayway.restassured.http.ContentType;
+import static com.jayway.restassured.http.ContentType.JSON;
 import com.jayway.restassured.response.Response;
 import com.person.NewPerson;
 import com.person.Person;
@@ -25,7 +25,6 @@ import com.person.PersonRepository;
 import com.person.subject.NewSubject;
 import com.person.subject.Subject;
 import com.person.subject.SubjectRepository;
-import org.springframework.http.HttpStatus;
 
 public class PersonControllerTest extends AbstractControllerTest {
 
@@ -41,9 +40,14 @@ public class PersonControllerTest extends AbstractControllerTest {
 	private String linkToPersonsCollection = links+"persons.href";
 	private String linkToSinglePerson = links+"person.href";
 	private String linkToSubjectCollection = links+"subjectsForPerson.href"; 
+	private String searchBySubjectRootPath = "subjectResource.find {it.subjectName == '%s'}";
+	
 	private long firstPersonId;
 	private long secondPersonId;
-	private String searchBySubjectRootPath = "subjectResource.find {it.subjectName == '%s'}";
+	private long notExistingPersonId;
+	
+	private static final String MESSAGE_FORMAT = "Entity '%d' does not exist";
+	private String messageIfPersonNotExist;
 	
 	@Before
 	public void setUp() {
@@ -52,6 +56,8 @@ public class PersonControllerTest extends AbstractControllerTest {
 		List<Person> persons = personRepository.findAll();
 		firstPersonId = persons.get(0).getId();
 		secondPersonId = persons.get(1).getId();
+		notExistingPersonId = 100;
+		messageIfPersonNotExist = String.format(MESSAGE_FORMAT, notExistingPersonId);
 	}
 	
 	@After
@@ -65,8 +71,8 @@ public class PersonControllerTest extends AbstractControllerTest {
 		when()
 			.get("/persons")
 		.then()
-			.statusCode(HttpStatus.OK.value())
-			.contentType(ContentType.JSON)
+			.statusCode(OK)
+			.contentType(JSON)
 			.root(getPersonRoot(0))
 				.body("firstName", equalTo("Jan"))
 				.body("lastName", equalTo("Nowak"))
@@ -88,8 +94,8 @@ public class PersonControllerTest extends AbstractControllerTest {
 		when()
 			.get("/persons/{id}",firstPersonId)
 		.then()
-			.statusCode(HttpStatus.OK.value())
-			.contentType(ContentType.JSON)
+			.statusCode(OK)
+			.contentType(JSON)
 			.body("firstName", equalTo("Jan"))
 			.body("lastName", equalTo("Nowak"))
 		
@@ -111,6 +117,16 @@ public class PersonControllerTest extends AbstractControllerTest {
 	}
 	
 	@Test
+	public void getNotExistingPerson() {
+		when()
+			.get("/persons/{id}",notExistingPersonId)
+		.then()
+			.statusCode(NOT_FOUND)
+			.contentType(JSON)
+			.body("message",equalTo(messageIfPersonNotExist));
+	}
+	
+	@Test
 	public void createNewPerson(){
 		NewPerson newPerson = new NewPerson("Marcin", "Kot");
 		
@@ -123,11 +139,11 @@ public class PersonControllerTest extends AbstractControllerTest {
 
 	private Response verifyPostNewPerson(NewPerson newPerson) {
 		return given()
-					.contentType(ContentType.JSON).body(newPerson)
+					.contentType(JSON).body(newPerson)
 			   .when()
 			   		.post("/persons")
 			   	.then()
-			   		.statusCode(HttpStatus.CREATED.value())
+			   		.statusCode(CREATED)
 				.extract()
 					.response();
 	}
@@ -136,8 +152,8 @@ public class PersonControllerTest extends AbstractControllerTest {
 		when()
 			.get(newPersonLocation)
 		.then()
-			.statusCode(HttpStatus.OK.value())
-			.contentType(ContentType.JSON)
+			.statusCode(OK)
+			.contentType(JSON)
 				.body("firstName", equalTo(newPerson.getFirstName()))
 				.body("lastName", equalTo(newPerson.getLastName()))
 				.body(linkToSelf, equalTo(newPersonLocation)) 						 // http://localhost:8080/persons/{newPersonLocation}
@@ -153,14 +169,28 @@ public class PersonControllerTest extends AbstractControllerTest {
 		
 		verifyRecentlyPutSubject();
 	}
+	
+	@Test
+	public void addSubjectToNotExistingPerson() {
+		NewSubject newSubject = new NewSubject("Physics");
+
+		given()
+			.contentType(JSON).body(newSubject).param("personId",notExistingPersonId)
+		.when()
+			.put("/persons/{id}/subjects", notExistingPersonId)
+		.then()
+			.statusCode(NOT_FOUND)
+			.contentType(JSON)
+			.body("message",equalTo(messageIfPersonNotExist));
+	}
 
 	private Response verifyPutNewSubject(NewSubject newSubject) {
 		return given()
-					.contentType(ContentType.JSON).body(newSubject).param("personId",firstPersonId)
+					.contentType(JSON).body(newSubject).param("personId",firstPersonId)
 				.when()
 					.put("/persons/{id}/subjects", firstPersonId)
 				.then()
-					.statusCode(HttpStatus.NO_CONTENT.value())
+					.statusCode(NO_CONTENT)
 				.extract()
 					.response();
 	}
@@ -169,8 +199,8 @@ public class PersonControllerTest extends AbstractControllerTest {
 		when()
 			.get("/persons/{id}",firstPersonId)
 		.then()
-			.statusCode(HttpStatus.OK.value())
-			.contentType(ContentType.JSON)
+			.statusCode(OK)
+			.contentType(JSON)
 			.body("firstName", equalTo("Jan"))
 			.body("lastName", equalTo("Nowak"))
 			.body("subjectResource.subjectName", hasItems("Math","English","Physics"))
@@ -190,11 +220,11 @@ public class PersonControllerTest extends AbstractControllerTest {
 
 	private Response verifyChangePersonDetails(NewPerson newPerson) {
 		return given()
-					.contentType(ContentType.JSON).body(newPerson).param("personId",firstPersonId)
+					.contentType(JSON).body(newPerson).param("personId",firstPersonId)
 				.when()
 					.put("/persons/{id}", firstPersonId)
 				.then()
-					.statusCode(HttpStatus.NO_CONTENT.value())
+					.statusCode(NO_CONTENT)
 				.extract()
 					.response();
 	}
@@ -203,8 +233,8 @@ public class PersonControllerTest extends AbstractControllerTest {
 		when()
 			.get("/persons/{id}",firstPersonId)
 		.then()
-			.statusCode(HttpStatus.OK.value())
-			.contentType(ContentType.JSON)
+			.statusCode(OK)
+			.contentType(JSON)
 			.body("firstName", equalTo(newPerson.getFirstName()))
 			.body("lastName", equalTo(newPerson.getLastName()))
 			.body("subjectResource.subjectName", hasItems("Math","English"))
