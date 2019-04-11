@@ -38,10 +38,10 @@ public class PersonControllerTest extends AbstractControllerTest {
 	private String links = "_links.";
 	private String linkToSelf = links+"self.href";
 	private String linkToPersonsCollection = links+"persons.href";
-	private String linkToSinglePerson = links+"person.href";
-	private String linkToSubjectCollection = links+"subjectsForPerson.href"; 
-	private String searchBySubjectRootPath = "subjectResource.find {it.subjectName == '%s'}";
+	private String linkToSubjectCollection = "subjectResource."+links+"subjectsForPerson.href"; 
 	
+	private String linkToSubjectName = "subjectResource._embedded.subjectResources.subjectName";
+	private String searchBySubjectRootPath = "subjectResource._embedded.subjectResources.find {it.subjectName == '%s'}";
 	private long firstPersonId;
 	private long secondPersonId;
 	private long notExistingPersonId;
@@ -76,15 +76,13 @@ public class PersonControllerTest extends AbstractControllerTest {
 			.root(getPersonRoot(0))
 				.body("firstName", equalTo("Jan"))
 				.body("lastName", equalTo("Nowak"))
-				.body("subjectResource.subjectName", hasItems("Math","English"))
+				.body(linkToSubjectName, hasItems("Math","English"))
 				.body(linkToSelf, equalTo(getPersonSingleLink(firstPersonId)))
-				.body(linkToPersonsCollection, equalTo(getPersonCollectionLink()))
 			.root(getPersonRoot(1))
 				.body("firstName", equalTo("Marcin"))
 				.body("lastName", equalTo("Kowalski"))
-				.body("subjectResource.subjectName", hasItems("English"))
+				.body(linkToSubjectName, hasItems("English"))
 				.body(linkToSelf, equalTo(getPersonSingleLink(secondPersonId)))
-				.body(linkToPersonsCollection, equalTo(getPersonCollectionLink()))
 			.noRoot()
 				.body(linkToPersonsCollection, equalTo(getPersonCollectionLink()));
 	}
@@ -102,18 +100,15 @@ public class PersonControllerTest extends AbstractControllerTest {
 			.root(searchBySubjectRootPath,withArgs("English"))
 				.body("degree", hasItems(4.0f,4.5f,5.0f))
 				.body(linkToSelf, equalTo(getSubjectSingleLink(firstPersonId,"English")))        // http://localhost:8080/persons/1/subjects/English
-				.body(linkToSinglePerson, equalTo(getPersonSingleLink(firstPersonId)))           // http://localhost:8080/persons/1
-				.body(linkToSubjectCollection, equalTo(getSubjectCollectionLink(firstPersonId))) // http://localhost:8080/persons/1/subjects
 		
 			.root(searchBySubjectRootPath,withArgs("Math"))
 				.body("degree", hasItems(3.0f,3.5f,3.5f))
 				.body(linkToSelf, equalTo(getSubjectSingleLink(firstPersonId,"Math")))            // http://localhost:8080/persons/1/subjects/Math
-				.body(linkToSinglePerson, equalTo(getPersonSingleLink(firstPersonId)))            // http://localhost:8080/persons/1
-				.body(linkToSubjectCollection, equalTo(getSubjectCollectionLink(firstPersonId))) // http://localhost:8080/persons/1/subjects
 		
 			.noRoot()
 				.body(linkToSelf, equalTo(getPersonSingleLink(firstPersonId))) 						 // http://localhost:8080/persons/1
-				.body(linkToPersonsCollection, equalTo(getPersonCollectionLink()));					 // http://localhost:8080/persons
+				.body(linkToPersonsCollection, equalTo(getPersonCollectionLink()))					 // http://localhost:8080/persons
+				.body(linkToSubjectCollection, equalTo(getSubjectCollectionLink(firstPersonId)));    // http://localhost:8080/persons/1/subjects
 	}
 	
 	@Test
@@ -203,7 +198,7 @@ public class PersonControllerTest extends AbstractControllerTest {
 			.contentType(JSON)
 			.body("firstName", equalTo("Jan"))
 			.body("lastName", equalTo("Nowak"))
-			.body("subjectResource.subjectName", hasItems("Math","English","Physics"))
+			.body(linkToSubjectName, hasItems("Math","English","Physics"))
 			.body(linkToSelf, equalTo(getPersonSingleLink(firstPersonId)))
 			.body(linkToPersonsCollection, equalTo(getPersonCollectionLink()));
 	}
@@ -237,7 +232,7 @@ public class PersonControllerTest extends AbstractControllerTest {
 			.contentType(JSON)
 			.body("firstName", equalTo(newPerson.getFirstName()))
 			.body("lastName", equalTo(newPerson.getLastName()))
-			.body("subjectResource.subjectName", hasItems("Math","English"))
+			.body(linkToSubjectName, hasItems("Math","English"))
 			.body(linkToSelf, equalTo(getPersonSingleLink(firstPersonId)))
 			.body(linkToPersonsCollection, equalTo(getPersonCollectionLink()));
 	}

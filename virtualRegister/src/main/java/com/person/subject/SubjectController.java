@@ -4,6 +4,7 @@ import java.util.function.Function;
 
 import javax.transaction.Transactional;
 
+import org.springframework.hateoas.ResourceSupport;
 import org.springframework.hateoas.Resources;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.MediaType;
@@ -22,29 +23,30 @@ import com.exceptions.EntityNotExistException;
 @RequestMapping(value = "/persons/{personId}/subjects")
 public class SubjectController {
 	
+	private final SubjectsAssembler embeddedSubjectAss;
 	private final SubjectRepository subjectRepository;
-	private final SubjectResourceAssembler subjectResourceAssemb;
 	
-	public SubjectController(SubjectRepository subjectRepository, SubjectResourceAssembler subjectResourceAssemb) {
+	public SubjectController(SubjectsAssembler embeddedSubjectAss,
+			SubjectRepository subjectRepository) {
+		this.embeddedSubjectAss = embeddedSubjectAss;
 		this.subjectRepository = subjectRepository;
-		this.subjectResourceAssemb = subjectResourceAssemb;
 	}
-	
+
 	@GetMapping(produces = MediaType.APPLICATION_JSON_VALUE)
-	public HttpEntity<Resources<SubjectResource>> getSubjectForPerson(@PathVariable Long personId) throws EntityNotExistException {
-		Resources<SubjectResource> resources = subjectResourceAssemb.prepareListResources(subjectRepository.findByPersonId(personId));
-		return ResponseEntity.ok().body(resources);
+	public HttpEntity<Resources<ResourceSupport>> getSubjectForPerson(@PathVariable Long personId) throws EntityNotExistException {
+		Resources<ResourceSupport> subjectResources = embeddedSubjectAss.entityListToResource(subjectRepository.findByPersonId(personId));
+		return ResponseEntity.ok().body(subjectResources);
 	}
 
 	@GetMapping(value="/{subjectName}")
-	public HttpEntity<SubjectResource> getSubjectForPersonBySubjectName(
+	public HttpEntity<ResourceSupport> getSubjectForPersonBySubjectName(
 			@PathVariable Long personId, @PathVariable String subjectName) throws EntityNotExistException {
 		
-		SubjectResource sr = subjectRepository.findByPersonIdAndSubjectName(personId, subjectName)
-											  .map(subjectResourceAssemb::entitytoResource)
+		ResourceSupport subjectResource = subjectRepository.findByPersonIdAndSubjectName(personId, subjectName)
+											  .map(embeddedSubjectAss::singleEntityToResource)
 											  .orElseThrow(() -> new EntityNotExistException(personId));
 
-		return ResponseEntity.ok().body(sr);
+		return ResponseEntity.ok().body(subjectResource);
 	}
 	
 	@PutMapping(value="/{subjectName}")

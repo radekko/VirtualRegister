@@ -8,8 +8,9 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 import java.util.Arrays;
-import java.util.List;
+import java.util.HashSet;
 import java.util.Optional;
+import java.util.Set;
 
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -41,7 +42,7 @@ public class SubjectControllerTest {
 	
 	@Test
 	public void testGetSubjectsForPerson() throws Exception {
-		List<Subject> list = Arrays.asList(prepareExampeSubject());
+		Set<Subject> list = new HashSet<Subject>(Arrays.asList(prepareExampeSubject()));
 		
 		given(subjectRepository.findByPersonId(Mockito.any(Long.class))).willReturn(list);
 		
