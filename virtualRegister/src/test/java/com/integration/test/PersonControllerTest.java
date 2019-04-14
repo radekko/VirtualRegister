@@ -3,67 +3,53 @@ package com.integration.test;
 import static com.jayway.restassured.RestAssured.given;
 import static com.jayway.restassured.RestAssured.when;
 import static com.jayway.restassured.RestAssured.withArgs;
+import static com.jayway.restassured.http.ContentType.JSON;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.hasItems;
-import static org.hamcrest.Matchers.nullValue;
-import static org.junit.Assert.assertThat;
 
-import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 
-import org.junit.After;
 import org.junit.Before;
+import org.junit.BeforeClass;
 import org.junit.Test;
-import org.springframework.beans.factory.annotation.Autowired;
 
-import static com.jayway.restassured.http.ContentType.JSON;
 import com.jayway.restassured.response.Response;
 import com.person.NewPerson;
 import com.person.Person;
-import com.person.PersonRepository;
 import com.person.subject.NewSubject;
-import com.person.subject.Subject;
-import com.person.subject.SubjectRepository;
 
-public class PersonControllerTest extends AbstractControllerTest {
-
-	@Autowired
-	private PersonRepository personRepository;
+public class PersonControllerTest extends PersonRootControllerTest {
 	
-	@Autowired
-	private SubjectRepository subjectRepository;
+	public final String PATH_TO_PERSON_COLLECTION = "_embedded.personResources[%1$s].";
+	public final String LINK_TO_PERSONS_COLLECTION = LINKS+"persons.href";
+	public final String LINK_TO_SUBJECT_COLLECTION = "subjectResource."+LINKS+"subjectsForPerson.href"; 
 	
-	private String linkToPersonCollection = "_embedded.personResources[%1$s].";
-	private String links = "_links.";
-	private String linkToSelf = links+"self.href";
-	private String linkToPersonsCollection = links+"persons.href";
-	private String linkToSubjectCollection = "subjectResource."+links+"subjectsForPerson.href"; 
+	public final String PATH_TO_SUBJECTS = "subjectResource._embedded.subjectResources.";
+	public final String PATH_TO_SUBJECT_TO_SUBJECT_NAME = PATH_TO_SUBJECTS + "subjectName";
+	public final String SEARCH_BY_SUBJECT_ROOT_PATH = PATH_TO_SUBJECTS + "find {it.subjectName == '%s'}";
 	
-	private String linkToSubjectName = "subjectResource._embedded.subjectResources.subjectName";
-	private String searchBySubjectRootPath = "subjectResource._embedded.subjectResources.find {it.subjectName == '%s'}";
 	private long firstPersonId;
 	private long secondPersonId;
-	private long notExistingPersonId;
+	private long notExistingPersonId = 100;
 	
 	private static final String MESSAGE_FORMAT = "Entity '%d' does not exist";
-	private String messageIfPersonNotExist;
+	private String MESSAGE_IF_PERSON_NOT_EXIST = String.format(MESSAGE_FORMAT, notExistingPersonId);
+	
+	private static NewPerson newPerson;
+	private static NewSubject newSubject;
+	
+	@BeforeClass
+	public static void beforeAll() {
+		newPerson = new NewPerson("Marcin","Kot");
+		newSubject = new NewSubject("Physics");
+	}
 	
 	@Before
 	public void setUp() {
 		super.setUp();
-		insertSampleData();
 		List<Person> persons = personRepository.findAll();
 		firstPersonId = persons.get(0).getId();
 		secondPersonId = persons.get(1).getId();
-		notExistingPersonId = 100;
-		messageIfPersonNotExist = String.format(MESSAGE_FORMAT, notExistingPersonId);
-	}
-	
-	@After
-	public void cleanUpDatabase() {
-		personRepository.deleteAll();
-		subjectRepository.deleteAll();
 	}
 	
 	@Test
@@ -76,15 +62,15 @@ public class PersonControllerTest extends AbstractControllerTest {
 			.root(getPersonRoot(0))
 				.body("firstName", equalTo("Jan"))
 				.body("lastName", equalTo("Nowak"))
-				.body(linkToSubjectName, hasItems("Math","English"))
-				.body(linkToSelf, equalTo(getPersonSingleLink(firstPersonId)))
+				.body(PATH_TO_SUBJECT_TO_SUBJECT_NAME, hasItems("Math","English"))
+				.body(LINK_TO_SELF, equalTo(getPersonSingleLink(firstPersonId)))
 			.root(getPersonRoot(1))
 				.body("firstName", equalTo("Marcin"))
 				.body("lastName", equalTo("Kowalski"))
-				.body(linkToSubjectName, hasItems("English"))
-				.body(linkToSelf, equalTo(getPersonSingleLink(secondPersonId)))
+				.body(PATH_TO_SUBJECT_TO_SUBJECT_NAME, hasItems("English"))
+				.body(LINK_TO_SELF, equalTo(getPersonSingleLink(secondPersonId)))
 			.noRoot()
-				.body(linkToPersonsCollection, equalTo(getPersonCollectionLink()));
+				.body(LINK_TO_PERSONS_COLLECTION, equalTo(getPersonCollectionLink()));
 	}
 	
 	@Test
@@ -97,18 +83,18 @@ public class PersonControllerTest extends AbstractControllerTest {
 			.body("firstName", equalTo("Jan"))
 			.body("lastName", equalTo("Nowak"))
 		
-			.root(searchBySubjectRootPath,withArgs("English"))
-				.body("degree", hasItems(4.0f,4.5f,5.0f))
-				.body(linkToSelf, equalTo(getSubjectSingleLink(firstPersonId,"English")))        // http://localhost:8080/persons/1/subjects/English
+			.root(SEARCH_BY_SUBJECT_ROOT_PATH,withArgs("English"))
+			.body("degree", hasItems(4.0f,4.5f,5.0f))
+				.body(LINK_TO_SELF, equalTo(getSubjectSingleLink(firstPersonId,"English")))        // http://localhost:8080/persons/1/subjects/English
 		
-			.root(searchBySubjectRootPath,withArgs("Math"))
+			.root(SEARCH_BY_SUBJECT_ROOT_PATH,withArgs("Math"))
 				.body("degree", hasItems(3.0f,3.5f,3.5f))
-				.body(linkToSelf, equalTo(getSubjectSingleLink(firstPersonId,"Math")))            // http://localhost:8080/persons/1/subjects/Math
+				.body(LINK_TO_SELF, equalTo(getSubjectSingleLink(firstPersonId,"Math")))            // http://localhost:8080/persons/1/subjects/Math
 		
 			.noRoot()
-				.body(linkToSelf, equalTo(getPersonSingleLink(firstPersonId))) 						 // http://localhost:8080/persons/1
-				.body(linkToPersonsCollection, equalTo(getPersonCollectionLink()))					 // http://localhost:8080/persons
-				.body(linkToSubjectCollection, equalTo(getSubjectCollectionLink(firstPersonId)));    // http://localhost:8080/persons/1/subjects
+				.body(LINK_TO_SELF, equalTo(getPersonSingleLink(firstPersonId))) 						 // http://localhost:8080/persons/1
+				.body(LINK_TO_PERSONS_COLLECTION, equalTo(getPersonCollectionLink()))					 // http://localhost:8080/persons
+				.body(LINK_TO_SUBJECT_COLLECTION, equalTo(getSubjectCollectionLink(firstPersonId)));    // http://localhost:8080/persons/1/subjects
 	}
 	
 	@Test
@@ -118,21 +104,19 @@ public class PersonControllerTest extends AbstractControllerTest {
 		.then()
 			.statusCode(NOT_FOUND)
 			.contentType(JSON)
-			.body("message",equalTo(messageIfPersonNotExist));
+			.body("message",equalTo(MESSAGE_IF_PERSON_NOT_EXIST));
 	}
 	
 	@Test
 	public void createNewPerson(){
-		NewPerson newPerson = new NewPerson("Marcin", "Kot");
-		
-		Response response = verifyPostNewPerson(newPerson);
+		Response response = verifyPostNewPerson();
 		isResponseBodyEmpty(response);
 
 		String newPersonLocation = response.getHeader("location");
 		verifyRecentlyCreatedPerson(newPerson, newPersonLocation);
 	}
 
-	private Response verifyPostNewPerson(NewPerson newPerson) {
+	private Response verifyPostNewPerson() {
 		return given()
 					.contentType(JSON).body(newPerson)
 			   .when()
@@ -151,15 +135,13 @@ public class PersonControllerTest extends AbstractControllerTest {
 			.contentType(JSON)
 				.body("firstName", equalTo(newPerson.getFirstName()))
 				.body("lastName", equalTo(newPerson.getLastName()))
-				.body(linkToSelf, equalTo(newPersonLocation)) 						 // http://localhost:8080/persons/{newPersonLocation}
-				.body(linkToPersonsCollection, equalTo(getPersonCollectionLink()));  // http://localhost:8080/persons
+				.body(LINK_TO_SELF, equalTo(newPersonLocation)) 						 // http://localhost:8080/persons/{newPersonLocation}
+				.body(LINK_TO_PERSONS_COLLECTION, equalTo(getPersonCollectionLink()));  // http://localhost:8080/persons
 	}
 
 	@Test
 	public void addSubjectToPerson() {
-		NewSubject newSubject = new NewSubject("Physics");
-		
-		Response response = verifyPutNewSubject(newSubject);
+		Response response = verifyPutNewSubject();
 		isResponseBodyEmpty(response);
 		
 		verifyRecentlyPutSubject();
@@ -167,21 +149,19 @@ public class PersonControllerTest extends AbstractControllerTest {
 	
 	@Test
 	public void addSubjectToNotExistingPerson() {
-		NewSubject newSubject = new NewSubject("Physics");
-
 		given()
-			.contentType(JSON).body(newSubject).param("personId",notExistingPersonId)
+			.contentType(JSON).body(newSubject)
 		.when()
 			.put("/persons/{id}/subjects", notExistingPersonId)
 		.then()
 			.statusCode(NOT_FOUND)
 			.contentType(JSON)
-			.body("message",equalTo(messageIfPersonNotExist));
+			.body("message",equalTo(MESSAGE_IF_PERSON_NOT_EXIST));
 	}
 
-	private Response verifyPutNewSubject(NewSubject newSubject) {
+	private Response verifyPutNewSubject() {
 		return given()
-					.contentType(JSON).body(newSubject).param("personId",firstPersonId)
+					.contentType(JSON).body(newSubject)
 				.when()
 					.put("/persons/{id}/subjects", firstPersonId)
 				.then()
@@ -198,28 +178,34 @@ public class PersonControllerTest extends AbstractControllerTest {
 			.contentType(JSON)
 			.body("firstName", equalTo("Jan"))
 			.body("lastName", equalTo("Nowak"))
-			.body(linkToSubjectName, hasItems("Math","English","Physics"))
-			.body(linkToSelf, equalTo(getPersonSingleLink(firstPersonId)))
-			.body(linkToPersonsCollection, equalTo(getPersonCollectionLink()));
+			.body(PATH_TO_SUBJECT_TO_SUBJECT_NAME, hasItems("Math","English","Physics"))
+			.body(LINK_TO_SELF, equalTo(getPersonSingleLink(firstPersonId)))
+			.body(LINK_TO_PERSONS_COLLECTION, equalTo(getPersonCollectionLink()));
 	}
 
 	@Test
 	public void renamePerson() {
-		NewPerson newPerson = new NewPerson("Marcin","Kot");
-		
-		Response res = verifyChangePersonDetails(newPerson);
+		Response res = verifyChangePersonDetails(newPerson,firstPersonId,NO_CONTENT);
 		isResponseBodyEmpty(res);
-
+		
 		verifyRecentlyChangedPerson(newPerson);
 	}
+	
+	@Test
+	public void renameNotExistingPerson() {
+		NewPerson newPerson = new NewPerson("Marcin","Kot");
+		
+		Response res = verifyChangePersonDetails(newPerson,notExistingPersonId,NOT_FOUND);
+		isResponseBodyEmpty(res);
+	}
 
-	private Response verifyChangePersonDetails(NewPerson newPerson) {
+	private Response verifyChangePersonDetails(NewPerson newPerson, Long personId, int expectedStatusCode) {
 		return given()
-					.contentType(JSON).body(newPerson).param("personId",firstPersonId)
+					.contentType(JSON).body(newPerson)
 				.when()
-					.put("/persons/{id}", firstPersonId)
+					.put("/persons/{id}", personId)
 				.then()
-					.statusCode(NO_CONTENT)
+					.statusCode(expectedStatusCode)
 				.extract()
 					.response();
 	}
@@ -232,17 +218,13 @@ public class PersonControllerTest extends AbstractControllerTest {
 			.contentType(JSON)
 			.body("firstName", equalTo(newPerson.getFirstName()))
 			.body("lastName", equalTo(newPerson.getLastName()))
-			.body(linkToSubjectName, hasItems("Math","English"))
-			.body(linkToSelf, equalTo(getPersonSingleLink(firstPersonId)))
-			.body(linkToPersonsCollection, equalTo(getPersonCollectionLink()));
-	}
-	
-	private void isResponseBodyEmpty(Response res) {
-		assertThat(res.getHeader("Content-Lenght"), nullValue());
+			.body(PATH_TO_SUBJECT_TO_SUBJECT_NAME, hasItems("Math","English"))
+			.body(LINK_TO_SELF, equalTo(getPersonSingleLink(firstPersonId)))
+			.body(LINK_TO_PERSONS_COLLECTION, equalTo(getPersonCollectionLink()));
 	}
 	
 	private String getPersonRoot(long personId) {
-		return String.format(linkToPersonCollection,personId);
+		return String.format(PATH_TO_PERSON_COLLECTION,personId);
 	}
 	
 	private String getPersonSingleLink(long resourceId) {
@@ -259,22 +241,6 @@ public class PersonControllerTest extends AbstractControllerTest {
 	
 	private String getPersonCollectionLink() {
 		return getHost() + "/persons";
-	}
-	
-	private void insertSampleData() {
-		Subject subject = new Subject("Math",new ArrayList<>(Arrays.asList(3.0, 3.5, 3.5)));
-		Subject subject2 = new Subject("English",new ArrayList<>(Arrays.asList(4.0, 4.5, 5.0)));
-		Subject subject3 = new Subject("English",new ArrayList<>(Arrays.asList(2.0, 2.5, 3.0)));
-		
-		Person person = new Person("Jan", "Nowak");
-		Person person2 = new Person("Marcin", "Kowalski");
-		
-		person.addSubjects(subject);
-		person.addSubjects(subject2);
-		person2.addSubjects(subject3);
-		
-		personRepository.save(person);
-		personRepository.save(person2);
 	}
 
 }

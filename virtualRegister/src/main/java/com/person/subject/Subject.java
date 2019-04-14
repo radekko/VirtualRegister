@@ -14,7 +14,7 @@ import javax.persistence.ManyToOne;
 import com.person.Person;
 
 @Entity
-public class Subject {
+public class Subject implements Comparable<Subject>{
 	
 	@Id
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -67,5 +67,9 @@ public class Subject {
 		this.subjectName = subjectName;
 	}
 	public Subject() {
+	}
+	@Override
+	public int compareTo(Subject o) {
+		return this.subjectName.compareTo(o.subjectName);
 	}
 }

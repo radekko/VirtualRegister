@@ -2,6 +2,7 @@ package com.person.subject;
 
 import java.util.List;
 import java.util.Set;
+import java.util.TreeSet;
 import java.util.stream.Collectors;
 
 import org.springframework.hateoas.Link;
@@ -19,7 +20,8 @@ public class SubjectsAssembler {
 	}
 
 	public Resources<ResourceSupport> entityListToResource(Set<Subject> set) {
-		List<ResourceSupport> subjectResourcesList = set.stream().map(this::embeddedToResource).collect(Collectors.toList());
+		Set<Subject> sortedSubjects = new TreeSet<>(set);
+		List<ResourceSupport> subjectResourcesList = sortedSubjects.stream().map(this::embeddedToResource).collect(Collectors.toList());
 		return new Resources<ResourceSupport>(subjectResourcesList,linkToCollection(set.iterator().next()));
 	}
 	
