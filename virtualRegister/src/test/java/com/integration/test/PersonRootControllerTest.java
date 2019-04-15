@@ -2,6 +2,7 @@ package com.integration.test;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.List;
 
 import org.springframework.beans.factory.annotation.Autowired;
 
@@ -13,15 +14,43 @@ import com.person.subject.SubjectRepository;
 public abstract class PersonRootControllerTest extends AbstractControllerTest{
 	
 	@Autowired
-	public PersonRepository personRepository;
+	protected PersonRepository personRepository;
 	
 	@Autowired
-	public SubjectRepository subjectRepository;
+	protected SubjectRepository subjectRepository;
+	
+	protected long firstPersonId;
+	protected long secondPersonId;
+	protected long notExistingPersonId = -1;
 	
 	public void setUp() {
 		super.setUp();
 		cleanUpDatabase();
 		insertSampleData();
+		
+		List<Person> persons = personRepository.findAll();
+		firstPersonId = persons.get(0).getId();
+		secondPersonId = persons.get(1).getId();
+	}
+	
+	// localhost:8080/persons
+	protected String getPersonCollectionLink() {
+		return getHost() + "/persons";
+	}
+
+	// localhost:8080/persons/{personId}
+	protected String getConcretePersonLink(long personId) {
+		return getPersonCollectionLink() + "/" + personId;
+	}
+
+	// localhost:8080/persons/{personId}/subjects
+	protected String getSubjectCollectionLinkForChosenPerson(long personId) {
+		return getConcretePersonLink(personId) + "/subjects";
+	}
+	
+	// localhost:8080/persons/{personId}/subjects/{subjectName}
+	protected String getConcreteSubjectLinkForChosenPerson(Long personId, String subjectName) {
+		return getSubjectCollectionLinkForChosenPerson(personId) + "/" + subjectName;
 	}
 	
 	private void cleanUpDatabase() {

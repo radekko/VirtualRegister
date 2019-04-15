@@ -7,15 +7,12 @@ import static com.jayway.restassured.http.ContentType.JSON;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.hasItems;
 
-import java.util.List;
-
 import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
 import com.jayway.restassured.response.Response;
 import com.person.NewPerson;
-import com.person.Person;
 import com.person.subject.NewSubject;
 
 public class PersonControllerTest extends PersonRootControllerTest {
@@ -25,12 +22,8 @@ public class PersonControllerTest extends PersonRootControllerTest {
 	public final String LINK_TO_SUBJECT_COLLECTION = "subjectResource."+LINKS+"subjectsForPerson.href"; 
 	
 	public final String PATH_TO_SUBJECTS = "subjectResource._embedded.subjectResources.";
-	public final String PATH_TO_SUBJECT_TO_SUBJECT_NAME = PATH_TO_SUBJECTS + "subjectName";
+	public final String PATH_TO_SUBJECT_NAME = PATH_TO_SUBJECTS + "subjectName";
 	public final String SEARCH_BY_SUBJECT_ROOT_PATH = PATH_TO_SUBJECTS + "find {it.subjectName == '%s'}";
-	
-	private long firstPersonId;
-	private long secondPersonId;
-	private long notExistingPersonId = 100;
 	
 	private static final String MESSAGE_FORMAT = "Entity '%d' does not exist";
 	private String MESSAGE_IF_PERSON_NOT_EXIST = String.format(MESSAGE_FORMAT, notExistingPersonId);
@@ -47,9 +40,6 @@ public class PersonControllerTest extends PersonRootControllerTest {
 	@Before
 	public void setUp() {
 		super.setUp();
-		List<Person> persons = personRepository.findAll();
-		firstPersonId = persons.get(0).getId();
-		secondPersonId = persons.get(1).getId();
 	}
 	
 	@Test
@@ -59,16 +49,16 @@ public class PersonControllerTest extends PersonRootControllerTest {
 		.then()
 			.statusCode(OK)
 			.contentType(JSON)
-			.root(getPersonRoot(0))
+			.root(getPersonRootIfEmbedded(0))
 				.body("firstName", equalTo("Jan"))
 				.body("lastName", equalTo("Nowak"))
-				.body(PATH_TO_SUBJECT_TO_SUBJECT_NAME, hasItems("Math","English"))
-				.body(LINK_TO_SELF, equalTo(getPersonSingleLink(firstPersonId)))
-			.root(getPersonRoot(1))
+				.body(PATH_TO_SUBJECT_NAME, hasItems("Math","English"))
+				.body(LINK_TO_SELF, equalTo(getConcretePersonLink(firstPersonId)))
+			.root(getPersonRootIfEmbedded(1))
 				.body("firstName", equalTo("Marcin"))
 				.body("lastName", equalTo("Kowalski"))
-				.body(PATH_TO_SUBJECT_TO_SUBJECT_NAME, hasItems("English"))
-				.body(LINK_TO_SELF, equalTo(getPersonSingleLink(secondPersonId)))
+				.body(PATH_TO_SUBJECT_NAME, hasItems("English"))
+				.body(LINK_TO_SELF, equalTo(getConcretePersonLink(secondPersonId)))
 			.noRoot()
 				.body(LINK_TO_PERSONS_COLLECTION, equalTo(getPersonCollectionLink()));
 	}
@@ -85,16 +75,16 @@ public class PersonControllerTest extends PersonRootControllerTest {
 		
 			.root(SEARCH_BY_SUBJECT_ROOT_PATH,withArgs("English"))
 			.body("degree", hasItems(4.0f,4.5f,5.0f))
-				.body(LINK_TO_SELF, equalTo(getSubjectSingleLink(firstPersonId,"English")))        // http://localhost:8080/persons/1/subjects/English
+				.body(LINK_TO_SELF, equalTo(getConcreteSubjectLinkForChosenPerson(firstPersonId,"English")))  // http://localhost:8080/persons/1/subjects/English
 		
 			.root(SEARCH_BY_SUBJECT_ROOT_PATH,withArgs("Math"))
 				.body("degree", hasItems(3.0f,3.5f,3.5f))
-				.body(LINK_TO_SELF, equalTo(getSubjectSingleLink(firstPersonId,"Math")))            // http://localhost:8080/persons/1/subjects/Math
+				.body(LINK_TO_SELF, equalTo(getConcreteSubjectLinkForChosenPerson(firstPersonId,"Math")))  // http://localhost:8080/persons/1/subjects/Math
 		
 			.noRoot()
-				.body(LINK_TO_SELF, equalTo(getPersonSingleLink(firstPersonId))) 						 // http://localhost:8080/persons/1
+				.body(LINK_TO_SELF, equalTo(getConcretePersonLink(firstPersonId))) 						 // http://localhost:8080/persons/1
 				.body(LINK_TO_PERSONS_COLLECTION, equalTo(getPersonCollectionLink()))					 // http://localhost:8080/persons
-				.body(LINK_TO_SUBJECT_COLLECTION, equalTo(getSubjectCollectionLink(firstPersonId)));    // http://localhost:8080/persons/1/subjects
+				.body(LINK_TO_SUBJECT_COLLECTION, equalTo(getSubjectCollectionLinkForChosenPerson(firstPersonId)));    // http://localhost:8080/persons/1/subjects
 	}
 	
 	@Test
@@ -178,8 +168,8 @@ public class PersonControllerTest extends PersonRootControllerTest {
 			.contentType(JSON)
 			.body("firstName", equalTo("Jan"))
 			.body("lastName", equalTo("Nowak"))
-			.body(PATH_TO_SUBJECT_TO_SUBJECT_NAME, hasItems("Math","English","Physics"))
-			.body(LINK_TO_SELF, equalTo(getPersonSingleLink(firstPersonId)))
+			.body(PATH_TO_SUBJECT_NAME, hasItems("Math","English","Physics"))
+			.body(LINK_TO_SELF, equalTo(getConcretePersonLink(firstPersonId)))
 			.body(LINK_TO_PERSONS_COLLECTION, equalTo(getPersonCollectionLink()));
 	}
 
@@ -218,29 +208,14 @@ public class PersonControllerTest extends PersonRootControllerTest {
 			.contentType(JSON)
 			.body("firstName", equalTo(newPerson.getFirstName()))
 			.body("lastName", equalTo(newPerson.getLastName()))
-			.body(PATH_TO_SUBJECT_TO_SUBJECT_NAME, hasItems("Math","English"))
-			.body(LINK_TO_SELF, equalTo(getPersonSingleLink(firstPersonId)))
+			.body(PATH_TO_SUBJECT_NAME, hasItems("Math","English"))
+			.body(LINK_TO_SELF, equalTo(getConcretePersonLink(firstPersonId)))
 			.body(LINK_TO_PERSONS_COLLECTION, equalTo(getPersonCollectionLink()));
 	}
 	
-	private String getPersonRoot(long personId) {
+	// _embedded.personResources[{personId}].
+	private String getPersonRootIfEmbedded(long personId) {
 		return String.format(PATH_TO_PERSON_COLLECTION,personId);
 	}
 	
-	private String getPersonSingleLink(long resourceId) {
-		return getPersonCollectionLink() + "/" + resourceId;
-	}
-	
-	private String getSubjectSingleLink(long resourceId, String subjectName) {
-		return getSubjectCollectionLink(resourceId) + "/" + subjectName;
-	}
-	
-	private String getSubjectCollectionLink(long resourceId) {
-		return getPersonCollectionLink() + "/" + resourceId + "/subjects";
-	}
-	
-	private String getPersonCollectionLink() {
-		return getHost() + "/persons";
-	}
-
 }
