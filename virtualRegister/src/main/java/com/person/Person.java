@@ -33,12 +33,6 @@ public class Person  {
 		this.firstName = firstName;
 		this.lastName = lastName;
 	}
-	
-	public Person(long id, String firstName, String lastName) {
-		this.id = id;
-		this.firstName = firstName;
-		this.lastName = lastName;
-	}
 
 	public String getFirstName() {
 		return firstName;
@@ -54,10 +48,6 @@ public class Person  {
 
 	public void setLastName(String lastName) {
 		this.lastName = lastName;
-	}
-
-	public void setId(long id) {
-		this.id = id;
 	}
 
 	public long getId() {

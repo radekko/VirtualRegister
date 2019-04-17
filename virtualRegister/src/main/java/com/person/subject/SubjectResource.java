@@ -7,7 +7,7 @@ import org.springframework.hateoas.ResourceSupport;
 public class SubjectResource extends ResourceSupport{
 
 	private String subjectName;
-	private List<Double> degree;
+	private List<Degree> degree;
 	
 	public SubjectResource(Subject subject) {
 		this.subjectName = subject.getSubjectName();
@@ -22,11 +22,11 @@ public class SubjectResource extends ResourceSupport{
 		this.subjectName = subjectName;
 	}
 
-	public List<Double> getDegree() {
+	public List<Degree> getDegree() {
 		return degree;
 	}
 
-	public void setDegree(List<Double> degree) {
+	public void setDegree(List<Degree> degree) {
 		this.degree = degree;
 	}
 

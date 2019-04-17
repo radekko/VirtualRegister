@@ -33,14 +33,17 @@ public class SubjectLinkProvider {
 		return links;
 	}
 	
+	// persons/{personId}/subjects/{subjectName} - self
 	private Link linkToSelf(Subject subject) {
 		return linkTo(PersonController.class).slash(subject.getPerson().getId()).slash("subjects").slash(subject.getSubjectName()).withSelfRel();
 	}
 	
+	// persons/{personId}/subjects		  - subjectsForPerson
 	private Link linkToGlobalCollection(Subject subject) {
 		return linkTo(PersonController.class).slash(subject.getPerson().getId()).slash("subjects").withRel("subjectsForPerson");
 	}
 	
+	// persons/{personId} - person
 	private Link linkToParent(Subject subject) {
 		return linkTo(PersonController.class).slash(subject.getPerson().getId()).withRel("person");
 	}

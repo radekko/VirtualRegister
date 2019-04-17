@@ -6,6 +6,8 @@ import java.util.List;
 import javax.persistence.CascadeType;
 import javax.persistence.ElementCollection;
 import javax.persistence.Entity;
+import javax.persistence.EnumType;
+import javax.persistence.Enumerated;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
@@ -22,52 +24,55 @@ public class Subject implements Comparable<Subject>{
 	private String subjectName;
 	
 	@ElementCollection
-	private List<Double> degrees = new ArrayList<>();
+	@Enumerated(EnumType.STRING)
+	private List<Degree> degrees = new ArrayList<>();
 	
 	@ManyToOne(cascade = CascadeType.ALL)
 	private Person person;
 	
-	public Long getId() {
-		return id;
-	}
-	public void setId(Long id) {
-		this.id = id;
-	}
-	public String getSubjectName() {
-		return subjectName;
-	}
-	public void setSubjectName(String subjectName) {
-		this.subjectName = subjectName;
-	}
-	public List<Double> getDegree() {
-		return degrees;
-	}
-	public void setDegree(List<Double> degree) {
-		this.degrees = degree;
-	}
-	public void addDegree(double degree) {
-		degrees.add(degree);
-	}
-	public Person getPerson() {
-		return person;
-	}
-	public void setPerson(Person person) {
-		this.person = person;
-	}
-	public Subject(Long id, String subjectName, List<Double> degree) {
-		this.id = id;
+	public Subject() {}
+	
+	public Subject(String subjectName, List<Degree> degree) {
 		this.subjectName = subjectName;
 		this.degrees = degree;
 	}
-	public Subject(String subjectName, List<Double> degree) {
-		this.subjectName = subjectName;
-		this.degrees = degree;
-	}
+	
 	public Subject(String subjectName, Person person) {
 		this.subjectName = subjectName;
 	}
-	public Subject() {
+	
+	public Long getId() {
+		return id;
 	}
+
+	public String getSubjectName() {
+		return subjectName;
+	}
+	
+	public void setSubjectName(String subjectName) {
+		this.subjectName = subjectName;
+	}
+	
+	public List<Degree> getDegree() {
+		return degrees;
+	}
+	
+	public void setDegree(List<Degree> degree) {
+		this.degrees = degree;
+	}
+	
+	public void addDegree(Degree degree) {
+		degrees.add(degree);
+	}
+	
+	public Person getPerson() {
+		return person;
+	}
+	
+	public void setPerson(Person person) {
+		this.person = person;
+	}
+	
 	@Override
 	public int compareTo(Subject o) {
 		return this.subjectName.compareTo(o.subjectName);

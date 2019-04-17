@@ -22,6 +22,7 @@ public abstract class AbstractControllerTest {
 	public int CREATED = HttpStatus.CREATED.value();
 	public int NOT_FOUND = HttpStatus.NOT_FOUND.value();
 	public int NO_CONTENT = HttpStatus.NO_CONTENT.value();
+	public int BAD_REQUEST = HttpStatus.BAD_REQUEST.value();
 	
 	public final String LINKS = "_links.";
 	public final String LINK_TO_SELF = LINKS + "self.href";

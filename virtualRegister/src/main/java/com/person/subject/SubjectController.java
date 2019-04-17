@@ -16,6 +16,7 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.exceptions.DegreeFormatException;
 import com.exceptions.EntityNotExistException;
 
 @RestController
@@ -33,7 +34,7 @@ public class SubjectController {
 	}
 
 	@GetMapping(produces = MediaType.APPLICATION_JSON_VALUE)
-	public HttpEntity<Resources<ResourceSupport>> getSubjectForPerson(@PathVariable Long personId) throws EntityNotExistException {
+	public HttpEntity<Resources<ResourceSupport>> getSubjectsForPerson(@PathVariable Long personId) throws EntityNotExistException {
 		Resources<ResourceSupport> subjectResources = embeddedSubjectAss.entityListToResource(subjectRepository.findByPersonId(personId));
 		return ResponseEntity.ok().body(subjectResources);
 	}
@@ -51,10 +52,13 @@ public class SubjectController {
 	
 	@PutMapping(value="/{subjectName}")
 	public HttpEntity<Void> addDegreeToSubjectForChoosenPerson(
-			@PathVariable Long personId, @PathVariable String subjectName, @RequestBody Degree degree) throws EntityNotExistException {
+			@PathVariable Long personId, @PathVariable String subjectName, @RequestBody Float degree)
+					throws EntityNotExistException, DegreeFormatException {
 
+		Degree degreeToAdd = Degree.getByValue(degree).orElseThrow(() -> new DegreeFormatException(degree));
+		
 		subjectRepository.findByPersonIdAndSubjectName(personId, subjectName)
-						 .map(updateSubject(degree)
+						 .map(updateSubject(degreeToAdd)
 						 .andThen(storeSubject()))
 						 .orElseThrow(() -> new EntityNotExistException(personId));
 		
@@ -66,7 +70,7 @@ public class SubjectController {
 	}
 
 	private Subject addDegresToSubject(Degree degree, Subject s) {
-		s.addDegree(degree.getDegree());
+		s.addDegree(degree);
 		return s;
 	}
 	

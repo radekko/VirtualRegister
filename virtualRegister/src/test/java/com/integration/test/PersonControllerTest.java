@@ -6,6 +6,7 @@ import static com.jayway.restassured.RestAssured.withArgs;
 import static com.jayway.restassured.http.ContentType.JSON;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.hasItems;
+import static org.hamcrest.Matchers.contains;
 
 import org.junit.Before;
 import org.junit.BeforeClass;
@@ -17,16 +18,17 @@ import com.person.subject.NewSubject;
 
 public class PersonControllerTest extends PersonRootControllerTest {
 	
-	public final String PATH_TO_PERSON_COLLECTION = "_embedded.personResources[%1$s].";
-	public final String LINK_TO_PERSONS_COLLECTION = LINKS+"persons.href";
-	public final String LINK_TO_SUBJECT_COLLECTION = "subjectResource."+LINKS+"subjectsForPerson.href"; 
+	private final String PATH_TO_PERSON_COLLECTION = "_embedded.personResources[%1$s].";
+	private final String LINK_TO_PERSONS_COLLECTION = LINKS +"persons.href";
+	private final String LINK_TO_SUBJECT_COLLECTION = "subjectResource."+ LINKS +"subjectsForPerson.href"; 
 	
-	public final String PATH_TO_SUBJECTS = "subjectResource._embedded.subjectResources.";
-	public final String PATH_TO_SUBJECT_NAME = PATH_TO_SUBJECTS + "subjectName";
-	public final String SEARCH_BY_SUBJECT_ROOT_PATH = PATH_TO_SUBJECTS + "find {it.subjectName == '%s'}";
+	private final String PATH_TO_SUBJECTS = "subjectResource._embedded.subjectResources.";
+	private final String PATH_TO_SUBJECT_NAME = PATH_TO_SUBJECTS + "subjectName";
+	private final String SEARCH_BY_SUBJECT_ROOT_PATH = PATH_TO_SUBJECTS + "find {it.subjectName == '%s'}";
+	private final String SEARCH_All_DEGREES = "degree. findAll {it}.value";
 	
-	private static final String MESSAGE_FORMAT = "Entity '%d' does not exist";
-	private String MESSAGE_IF_PERSON_NOT_EXIST = String.format(MESSAGE_FORMAT, notExistingPersonId);
+	private final String MESSAGE_FORMAT = "Entity '%d' does not exist";
+	private final String MESSAGE_IF_PERSON_NOT_EXIST = String.format(MESSAGE_FORMAT, notExistingPersonId);
 	
 	private static NewPerson newPerson;
 	private static NewSubject newSubject;
@@ -74,11 +76,11 @@ public class PersonControllerTest extends PersonRootControllerTest {
 			.body("lastName", equalTo("Nowak"))
 		
 			.root(SEARCH_BY_SUBJECT_ROOT_PATH,withArgs("English"))
-			.body("degree", hasItems(4.0f,4.5f,5.0f))
+				.body(SEARCH_All_DEGREES, contains(4.0f,4.5f,5.0f))
 				.body(LINK_TO_SELF, equalTo(getConcreteSubjectLinkForChosenPerson(firstPersonId,"English")))  // http://localhost:8080/persons/1/subjects/English
 		
 			.root(SEARCH_BY_SUBJECT_ROOT_PATH,withArgs("Math"))
-				.body("degree", hasItems(3.0f,3.5f,3.5f))
+				.body(SEARCH_All_DEGREES, contains(3.0f,3.5f,3.5f))
 				.body(LINK_TO_SELF, equalTo(getConcreteSubjectLinkForChosenPerson(firstPersonId,"Math")))  // http://localhost:8080/persons/1/subjects/Math
 		
 			.noRoot()
