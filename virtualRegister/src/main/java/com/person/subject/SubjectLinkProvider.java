@@ -1,51 +1,40 @@
 package com.person.subject;
 
 import static org.springframework.hateoas.mvc.ControllerLinkBuilder.linkTo;
-
-import java.util.ArrayList;
-import java.util.List;
+import static org.springframework.hateoas.mvc.ControllerLinkBuilder.methodOn;
 
 import org.springframework.hateoas.Link;
 import org.springframework.stereotype.Component;
 
+import com.exceptions.EntityNotExistException;
 import com.person.PersonController;
 
 @Component
 public class SubjectLinkProvider {
 	
-	public List<Link> getLinksForCollection(Subject subject){
-		List<Link> links = new ArrayList<>();
-		links.add(linkToGlobalCollection(subject));
-		return links;
-	}
-	
-	public List<Link> getLinksForEmbeddedSubject(Subject subject){
-		List<Link> links = new ArrayList<>();
-		links.add(linkToSelf(subject));
-		return links;
-	}
-	
-	public List<Link> getLinksForChosenSubject(Subject subject){
-		List<Link> links = new ArrayList<>();
-		links.add(linkToSelf(subject));    				// persons/1/subjects/English - self
-		links.add(linkToParent(subject));				// persons/1				  - person
-		links.add(linkToGlobalCollection(subject));     // persons/1/subjects		  - subjectsForPerson
-		return links;
-	}
-	
 	// persons/{personId}/subjects/{subjectName} - self
-	private Link linkToSelf(Subject subject) {
-		return linkTo(PersonController.class).slash(subject.getPerson().getId()).slash("subjects").slash(subject.getSubjectName()).withSelfRel();
-	}
-	
-	// persons/{personId}/subjects		  - subjectsForPerson
-	private Link linkToGlobalCollection(Subject subject) {
-		return linkTo(PersonController.class).slash(subject.getPerson().getId()).slash("subjects").withRel("subjectsForPerson");
+	public static Link linkToSubject(Subject subject) {
+		long personId = subject.getPerson().getId();
+		String subjectName = subject.getSubjectName();
+
+		Link link;
+		try {
+			link = linkTo(methodOn(SubjectController.class).getSubjectForPersonBySubjectName(personId,subjectName)).withSelfRel();
+		} 
+		catch (EntityNotExistException e) {throw new RuntimeException("Entity not exist");}
+		
+		return link;
 	}
 	
 	// persons/{personId} - person
-	private Link linkToParent(Subject subject) {
-		return linkTo(PersonController.class).slash(subject.getPerson().getId()).withRel("person");
+	public static Link linkToParentPerson(Subject subject) {
+		long personId = subject.getPerson().getId();
+
+		Link link;
+		try {link = linkTo(methodOn(PersonController.class).getPerson(personId)).withRel("person");}
+		catch (EntityNotExistException e) {throw new RuntimeException("Person not exist");}
+		
+		return link;
 	}
 	
 }

@@ -1,49 +1,35 @@
 package com.person.subject;
 
+import java.util.ArrayList;
 import java.util.List;
-import java.util.Set;
-import java.util.TreeSet;
-import java.util.stream.Collectors;
 
 import org.springframework.hateoas.Link;
 import org.springframework.hateoas.ResourceSupport;
-import org.springframework.hateoas.Resources;
 import org.springframework.stereotype.Component;
+
+import com.person.PersonLinkProvider;
 
 @Component
 public class SubjectsAssembler {
 	
-	private final SubjectLinkProvider subjectRelProvider;
-	
-	public SubjectsAssembler(SubjectLinkProvider subjectRelProvider) {
-		this.subjectRelProvider = subjectRelProvider;
-	}
-
-	public Resources<ResourceSupport> entityListToResource(Set<Subject> set) {
-		Set<Subject> sortedSubjects = new TreeSet<>(set);
-		List<ResourceSupport> subjectResourcesList = sortedSubjects.stream().map(this::embeddedToResource).collect(Collectors.toList());
-		return new Resources<ResourceSupport>(subjectResourcesList,linkToCollection(set.iterator().next()));
-	}
-	
-	public ResourceSupport singleEntityToResource(Subject subject) {
+	public ResourceSupport toResource(Subject subject) {
 		ResourceSupport subjectResource = new SubjectResource(subject);
 		if(ifSubjectIsAssignedToPerson(subject)) 
-			subjectResource.add(subjectRelProvider.getLinksForChosenSubject(subject));
+			subjectResource.add(getLinks(subject));
 			
 		return subjectResource;
+	}
+	
+	private List<Link> getLinks(Subject subject){
+		List<Link> links = new ArrayList<>();
+		links.add(SubjectLinkProvider.linkToSubject(subject));    	                   // persons/1/subjects/English - self
+		links.add(SubjectLinkProvider.linkToParentPerson(subject));					   // persons/1 - person
+		links.add(PersonLinkProvider.linkToSubjectsCollection(subject.getPerson()));   // persons/1/subjects - subjectsForPerson
+		return links;
 	}
 	
 	private boolean ifSubjectIsAssignedToPerson(Subject subject) {
 		return subject.getPerson() != null;
 	}
 	
-	private ResourceSupport embeddedToResource(Subject subject) {
-		ResourceSupport subjectResource = new SubjectResource(subject);
-		subjectResource.add(subjectRelProvider.getLinksForEmbeddedSubject(subject));
-		return subjectResource;
-	}
-
-	private List<Link> linkToCollection(Subject subject) {
-		return subjectRelProvider.getLinksForCollection(subject);
-	}
 }

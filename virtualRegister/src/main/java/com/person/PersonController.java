@@ -28,24 +28,27 @@ import com.person.subject.Subject;
 @RequestMapping(value = "/persons")
 public class PersonController {
 	
+	private final PersonsCollectionAssembler personsCollectionAssembler;
 	private final PersonsAssembler personsAssembler;
 	private final PersonRepository personRepository;
 
-	public PersonController(PersonsAssembler embeddedPersonsAss, PersonRepository personRepository) {
-		this.personsAssembler = embeddedPersonsAss;
+	public PersonController(PersonsCollectionAssembler personsCollectionAssembler, PersonsAssembler personsAssembler,
+			PersonRepository personRepository) {
+		this.personsCollectionAssembler = personsCollectionAssembler;
+		this.personsAssembler = personsAssembler;
 		this.personRepository = personRepository;
 	}
 
 	@GetMapping(produces = MediaType.APPLICATION_JSON_VALUE)
 	public HttpEntity<Resources<ResourceSupport>> getAllPersons() {
-		Resources<ResourceSupport> resources = personsAssembler.entityListToResource(personRepository.findAll());
+		Resources<ResourceSupport> resources = personsCollectionAssembler.listToResource(personRepository.findAll());
 		return ResponseEntity.ok().body(resources);
 	}
 	
 	@GetMapping(value="/{personId}")
 	public HttpEntity<ResourceSupport> getPerson(@PathVariable Long personId) throws EntityNotExistException {
 		ResourceSupport pr = personRepository.findById(personId)
-				.map(personsAssembler::singleEntityToResource)
+				.map(personsAssembler::toResource)
 				.orElseThrow(() -> new EntityNotExistException(personId));
 		
 		return ResponseEntity.ok().body(pr);
@@ -54,7 +57,7 @@ public class PersonController {
 	@PostMapping
 	public HttpEntity<Void> createNewPerson(@RequestBody NewPerson newPerson) throws URISyntaxException {
 		Person p = personRepository.save(new Person(newPerson.getFirstName(),newPerson.getLastName()));
-		ResourceSupport res = personsAssembler.singleEntityToResource(p);
+		ResourceSupport res = personsAssembler.toResource(p);
 		return ResponseEntity.created(new URI(res.getId().expand().getHref())).build();
 	}
 	

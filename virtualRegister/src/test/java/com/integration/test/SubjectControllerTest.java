@@ -20,7 +20,7 @@ import com.person.subject.Subject;
 
 public class SubjectControllerTest extends PersonRootControllerTest{
 
-	private final String PATH_TO_SUBJECT_COLLECTION = "_embedded.subjectResources[%1$s].";
+	private final String PATH_TO_SUBJECT_COLLECTION = "_embedded.subjects[%1$s].";
 	private final String LINK_TO_ROOT_SUBJECTS = LINKS+"subjectsForPerson.href";
 	private final String NOT_EXISTING_SUBJECT_NAME = "not existing";
 	private final String SEARCH_All_DEGREES = "degree. findAll {it}.value";

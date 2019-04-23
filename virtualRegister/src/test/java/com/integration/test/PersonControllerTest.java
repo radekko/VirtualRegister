@@ -18,11 +18,12 @@ import com.person.subject.NewSubject;
 
 public class PersonControllerTest extends PersonRootControllerTest {
 	
-	private final String PATH_TO_PERSON_COLLECTION = "_embedded.personResources[%1$s].";
-	private final String LINK_TO_PERSONS_COLLECTION = LINKS +"persons.href";
-	private final String LINK_TO_SUBJECT_COLLECTION = "subjectResource."+ LINKS +"subjectsForPerson.href"; 
+	private final String PATH_TO_PERSON_COLLECTION = "_embedded.persons[%1$s].";
+	private final String LINK_TO_PERSONS_COLLECTION = LINKS + "persons.href";
+	private final String LINK_TO_SUBJECT_COLLECTION_IN_PERSONS = LINKS + "subjectsForPerson.href"; 
+	private final String LINK_TO_SUBJECT_COLLECTION = "_embedded.personSubjects." + LINK_TO_SUBJECT_COLLECTION_IN_PERSONS; 
+	private final String PATH_TO_SUBJECTS = "_embedded.personSubjects._embedded.subjects.";
 	
-	private final String PATH_TO_SUBJECTS = "subjectResource._embedded.subjectResources.";
 	private final String PATH_TO_SUBJECT_NAME = PATH_TO_SUBJECTS + "subjectName";
 	private final String SEARCH_BY_SUBJECT_ROOT_PATH = PATH_TO_SUBJECTS + "find {it.subjectName == '%s'}";
 	private final String SEARCH_All_DEGREES = "degree. findAll {it}.value";
@@ -54,12 +55,12 @@ public class PersonControllerTest extends PersonRootControllerTest {
 			.root(getPersonRootIfEmbedded(0))
 				.body("firstName", equalTo("Jan"))
 				.body("lastName", equalTo("Nowak"))
-				.body(PATH_TO_SUBJECT_NAME, hasItems("Math","English"))
+				.body(LINK_TO_SUBJECT_COLLECTION_IN_PERSONS, equalTo(getSubjectCollectionLinkForChosenPerson(firstPersonId)))    // http://localhost:8080/persons/1/subjects
 				.body(LINK_TO_SELF, equalTo(getConcretePersonLink(firstPersonId)))
 			.root(getPersonRootIfEmbedded(1))
 				.body("firstName", equalTo("Marcin"))
 				.body("lastName", equalTo("Kowalski"))
-				.body(PATH_TO_SUBJECT_NAME, hasItems("English"))
+				.body(LINK_TO_SUBJECT_COLLECTION_IN_PERSONS, equalTo(getSubjectCollectionLinkForChosenPerson(secondPersonId)))    // http://localhost:8080/persons/2/subjects
 				.body(LINK_TO_SELF, equalTo(getConcretePersonLink(secondPersonId)))
 			.noRoot()
 				.body(LINK_TO_PERSONS_COLLECTION, equalTo(getPersonCollectionLink()));

@@ -6,7 +6,7 @@ import org.springframework.stereotype.Component;
 
 @Component
 public class Endpoints {
-	private MultiValuedMap<String, InfoAboutMethod> endpoints;
+	private final MultiValuedMap<String, InfoAboutMethod> endpoints;
 
 	public Endpoints() {
 		endpoints = new HashSetValuedHashMap<>();
@@ -23,13 +23,8 @@ public class Endpoints {
 	private void printOneEndpoint(String pathToEndpoint) {
     	System.out.println(pathToEndpoint);
     	System.out.println("---------------------------------------------------------------------");
-    	endpoints.get(pathToEndpoint).stream().sorted().forEach(this::print);
+    	endpoints.get(pathToEndpoint).stream().sorted().map(InfoAboutMethod::toString).forEach(System.out::println);
     	System.out.println();
     }
     
-    private void print(InfoAboutMethod i) {
-    	String httpMethodName = i.getRequestMethod().map(Enum::toString).orElse("");
-    	System.out.format("%-5s| %s \n", httpMethodName, i.getServerSideMethodName());
-    }
-
 }

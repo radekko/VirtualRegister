@@ -3,7 +3,9 @@ package com.person.subject;
 import java.util.List;
 
 import org.springframework.hateoas.ResourceSupport;
+import org.springframework.hateoas.core.Relation;
 
+@Relation(value="subject", collectionRelation="subjects")
 public class SubjectResource extends ResourceSupport{
 
 	private String subjectName;
@@ -29,5 +31,4 @@ public class SubjectResource extends ResourceSupport{
 	public void setDegree(List<Degree> degree) {
 		this.degree = degree;
 	}
-
 }

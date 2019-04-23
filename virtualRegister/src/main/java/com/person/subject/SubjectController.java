@@ -24,18 +24,20 @@ import com.exceptions.EntityNotExistException;
 @RequestMapping(value = "/persons/{personId}/subjects")
 public class SubjectController {
 	
-	private final SubjectsAssembler embeddedSubjectAss;
+	private final SubjectsCollectionAssembler subjectsCollectionAssembler;
+	private final SubjectsAssembler subjectsAssembler;
 	private final SubjectRepository subjectRepository;
 	
-	public SubjectController(SubjectsAssembler embeddedSubjectAss,
-			SubjectRepository subjectRepository) {
-		this.embeddedSubjectAss = embeddedSubjectAss;
+	public SubjectController(SubjectsCollectionAssembler subjectsCollectionAssembler,
+			SubjectsAssembler subjectsAssembler, SubjectRepository subjectRepository) {
+		this.subjectsCollectionAssembler = subjectsCollectionAssembler;
+		this.subjectsAssembler = subjectsAssembler;
 		this.subjectRepository = subjectRepository;
 	}
 
 	@GetMapping(produces = MediaType.APPLICATION_JSON_VALUE)
 	public HttpEntity<Resources<ResourceSupport>> getSubjectsForPerson(@PathVariable Long personId) throws EntityNotExistException {
-		Resources<ResourceSupport> subjectResources = embeddedSubjectAss.entityListToResource(subjectRepository.findByPersonId(personId));
+		Resources<ResourceSupport> subjectResources = subjectsCollectionAssembler.toResource(subjectRepository.findByPersonId(personId));
 		return ResponseEntity.ok().body(subjectResources);
 	}
 
@@ -44,7 +46,7 @@ public class SubjectController {
 			@PathVariable Long personId, @PathVariable String subjectName) throws EntityNotExistException {
 		
 		ResourceSupport subjectResource = subjectRepository.findByPersonIdAndSubjectName(personId, subjectName)
-											  .map(embeddedSubjectAss::singleEntityToResource)
+											  .map(subjectsAssembler::toResource)
 											  .orElseThrow(() -> new EntityNotExistException(personId));
 
 		return ResponseEntity.ok().body(subjectResource);

@@ -12,7 +12,7 @@ import org.springframework.web.servlet.mvc.method.RequestMappingInfo;
 
 @Component
 public class AccessibleEndpoints {
-	private Endpoints endpoints;
+	private final Endpoints endpoints;
 
 	public AccessibleEndpoints(Endpoints endpoints) {
 		this.endpoints = endpoints;
