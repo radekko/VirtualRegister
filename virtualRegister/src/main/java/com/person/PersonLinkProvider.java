@@ -21,18 +21,15 @@ public class PersonLinkProvider {
 	public static Link linkToPerson(Person person){
 		Link link;
 		try {link = linkTo(methodOn(PersonController.class).getPerson(person.getId())).withSelfRel();}
-		catch (EntityNotExistException e) {throw new RuntimeException("Person not exist");}
+		catch (EntityNotExistException e) {throw new RuntimeException("Entity not exist");}
 		return link;
 	}
 	
-	
 	// persons/{personId}/subjects - subjectsForPerson
 	public static Link linkToSubjectsCollection(Person person) {
-		long personId = person.getId();
-		
 		Link link;
 		try {
-			link = linkTo(methodOn(SubjectController.class).getSubjectsForPerson(personId)).withRel("subjectsForPerson");
+			link = linkTo(methodOn(SubjectController.class).getSubjectsForPerson(person.getId())).withRel("subjectsForPerson");
 		} 
 		catch (EntityNotExistException e) {throw new RuntimeException("Entity not exist");}
 		

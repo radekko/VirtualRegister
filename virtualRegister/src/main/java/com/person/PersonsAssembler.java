@@ -19,12 +19,12 @@ public class PersonsAssembler {
 	}
 
 	public ResourceSupport toResource(Person person) {
-		PersonResourceWithSubjects personResource = new PersonResourceWithSubjects(person);
+		PersonResource personResource = new PersonResource(person);
 		personResource.add(getLinks(person));
 		
 		Resources<ResourceSupport> subjectResource = subjectsCollectionAssembler.toResource(person.getSubjects());
-		
 		personResource.embedResource("personSubjects", subjectResource);
+
 		return personResource;
 	}
 	

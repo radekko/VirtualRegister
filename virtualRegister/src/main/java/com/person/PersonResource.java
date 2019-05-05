@@ -1,10 +1,9 @@
 package com.person;
 
-import org.springframework.hateoas.ResourceSupport;
 import org.springframework.hateoas.core.Relation;
 
 @Relation(value="person", collectionRelation="persons")
-public class PersonResource extends ResourceSupport {
+public class PersonResource extends EmbeddedResourceSupport {
 	private String firstName;
 	private String lastName;
 	
@@ -28,5 +27,4 @@ public class PersonResource extends ResourceSupport {
 	public void setLastName(String lastName) {
 		this.lastName = lastName;
 	}
-	
 }

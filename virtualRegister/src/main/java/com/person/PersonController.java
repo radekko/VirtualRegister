@@ -78,8 +78,8 @@ public class PersonController {
 	public HttpEntity<Void> renamePerson(@RequestBody NewPerson newPerson, @PathVariable Long personId) throws EntityNotExistException {
 		personRepository.findById(personId)
 						.map(
-								changePersonDetails(newPerson)
-								.andThen(updateChangedPerson())
+								changePerson(newPerson)
+								.andThen(updateChangedPersonInDatabase())
 						)
 						.orElseThrow(() -> new EntityNotExistException(personId));
 		
@@ -94,15 +94,17 @@ public class PersonController {
 		p.addSubjects(new Subject(newSubject.getSubjectName(),p));
 	}
 
-	private Function<Person, Person> changePersonDetails(NewPerson newPerson) {
-		return p -> {
-			p.setFirstName(newPerson.getFirstName());
-			p.setLastName(newPerson.getLastName());
-			return p;
-		};
+	private Function<Person, Person> changePerson(NewPerson newPerson) {
+		return p -> changePersonDetails(newPerson,p);
 	}
 	
-	private Function<Person, Person> updateChangedPerson() {
+	private Person changePersonDetails(NewPerson newPerson, Person p) {
+		p.setFirstName(newPerson.getFirstName());
+		p.setLastName(newPerson.getLastName());
+		return p;
+	}
+	
+	private Function<Person, Person> updateChangedPersonInDatabase() {
 		return personRepository :: save;
 	}
 	

@@ -4,20 +4,14 @@ import java.util.HashMap;
 import java.util.Map;
 
 import org.springframework.hateoas.ResourceSupport;
-import org.springframework.hateoas.core.Relation;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
-import com.fasterxml.jackson.annotation.JsonInclude.Include;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import com.fasterxml.jackson.annotation.JsonInclude.Include;
 
-@Relation(collectionRelation="persons")
-public class PersonResourceWithSubjects extends PersonResource {
-	
-	public PersonResourceWithSubjects(Person person) {
-		super(person);
-	}
+public class EmbeddedResourceSupport extends ResourceSupport {
 
-    private final Map<String, ResourceSupport> embedded = new HashMap<String, ResourceSupport>();
+	private final Map<String, ResourceSupport> embedded = new HashMap<String, ResourceSupport>();
 
     @JsonInclude(Include.NON_EMPTY)
     @JsonProperty("_embedded")
@@ -26,7 +20,6 @@ public class PersonResourceWithSubjects extends PersonResource {
     }
 
     public void embedResource(String relationship, ResourceSupport resource) {
-
     	embedded.put(relationship, resource);
     }
 }
