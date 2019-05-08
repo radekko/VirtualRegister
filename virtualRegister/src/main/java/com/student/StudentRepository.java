@@ -1,4 +1,4 @@
-package com.person;
+package com.student;
 
 import java.util.List;
 
@@ -7,6 +7,6 @@ import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
 @Repository
-public interface PersonRepository extends JpaRepository<Person, Long> {
-	List<Person> findByLastName(@Param("name") String name);
+public interface StudentRepository extends JpaRepository<Student, Long> {
+	List<Student> findByLastName(@Param("name") String name);
 }

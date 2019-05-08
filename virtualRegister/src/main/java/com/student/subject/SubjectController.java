@@ -1,4 +1,4 @@
-package com.person.subject;
+package com.student.subject;
 
 import java.util.function.Function;
 
@@ -21,7 +21,7 @@ import com.exceptions.EntityNotExistException;
 
 @RestController
 @Transactional
-@RequestMapping(value = "/persons/{personId}/subjects")
+@RequestMapping(value = "/students/{studentId}/subjects")
 public class SubjectController {
 	
 	private final SubjectsCollectionAssembler subjectsCollectionAssembler;
@@ -36,33 +36,33 @@ public class SubjectController {
 	}
 
 	@GetMapping(produces = MediaType.APPLICATION_JSON_VALUE)
-	public HttpEntity<Resources<ResourceSupport>> getSubjectsForPerson(@PathVariable Long personId) throws EntityNotExistException {
-		Resources<ResourceSupport> subjectResources = subjectsCollectionAssembler.toResource(subjectRepository.findByPersonId(personId));
+	public HttpEntity<Resources<ResourceSupport>> getSubjectsForStudent(@PathVariable Long studentId) throws EntityNotExistException {
+		Resources<ResourceSupport> subjectResources = subjectsCollectionAssembler.toResource(subjectRepository.findByStudentId(studentId));
 		return ResponseEntity.ok().body(subjectResources);
 	}
 
 	@GetMapping(value="/{subjectName}")
-	public HttpEntity<ResourceSupport> getSubjectForPersonBySubjectName(
-			@PathVariable Long personId, @PathVariable String subjectName) throws EntityNotExistException {
+	public HttpEntity<ResourceSupport> getSubjectForStudentBySubjectName(
+			@PathVariable Long studentId, @PathVariable String subjectName) throws EntityNotExistException {
 		
-		ResourceSupport subjectResource = subjectRepository.findByPersonIdAndSubjectName(personId, subjectName)
+		ResourceSupport subjectResource = subjectRepository.findByStudentIdAndSubjectName(studentId, subjectName)
 											  .map(subjectsAssembler::toResource)
-											  .orElseThrow(() -> new EntityNotExistException(personId));
+											  .orElseThrow(() -> new EntityNotExistException(studentId));
 
 		return ResponseEntity.ok().body(subjectResource);
 	}
 	
 	@PutMapping(value="/{subjectName}")
-	public HttpEntity<Void> addDegreeToSubjectForChoosenPerson(
-			@PathVariable Long personId, @PathVariable String subjectName, @RequestBody Float degree)
+	public HttpEntity<Void> addDegreeToSubjectForChoosenStudent(
+			@PathVariable Long studentId, @PathVariable String subjectName, @RequestBody Float degree)
 					throws EntityNotExistException, DegreeFormatException {
 
 		Degree degreeToAdd = Degree.getByValue(degree).orElseThrow(() -> new DegreeFormatException(degree));
 		
-		subjectRepository.findByPersonIdAndSubjectName(personId, subjectName)
+		subjectRepository.findByStudentIdAndSubjectName(studentId, subjectName)
 						 .map(updateSubject(degreeToAdd)
 						 .andThen(storeSubject()))
-						 .orElseThrow(() -> new EntityNotExistException(personId));
+						 .orElseThrow(() -> new EntityNotExistException(studentId));
 		
 		return ResponseEntity.noContent().build();
 	}

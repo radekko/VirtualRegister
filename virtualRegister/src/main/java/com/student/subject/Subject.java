@@ -1,4 +1,4 @@
-package com.person.subject;
+package com.student.subject;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -13,7 +13,7 @@ import javax.persistence.GenerationType;
 import javax.persistence.Id;
 import javax.persistence.ManyToOne;
 
-import com.person.Person;
+import com.student.Student;
 
 @Entity
 public class Subject implements Comparable<Subject>{
@@ -28,7 +28,7 @@ public class Subject implements Comparable<Subject>{
 	private List<Degree> degrees = new ArrayList<>();
 	
 	@ManyToOne(cascade = CascadeType.ALL)
-	private Person person;
+	private Student student;
 	
 	public Subject() {}
 	
@@ -37,7 +37,7 @@ public class Subject implements Comparable<Subject>{
 		this.degrees = degree;
 	}
 	
-	public Subject(String subjectName, Person person) {
+	public Subject(String subjectName, Student student) {
 		this.subjectName = subjectName;
 	}
 	
@@ -65,12 +65,12 @@ public class Subject implements Comparable<Subject>{
 		degrees.add(degree);
 	}
 	
-	public Person getPerson() {
-		return person;
+	public Student getStudent() {
+		return student;
 	}
 	
-	public void setPerson(Person person) {
-		this.person = person;
+	public void setStudent(Student student) {
+		this.student = student;
 	}
 	
 	@Override

@@ -1,4 +1,4 @@
-package com.person;
+package com.student;
 
 import java.util.HashSet;
 import java.util.Set;
@@ -11,10 +11,10 @@ import javax.persistence.Id;
 import javax.persistence.JoinColumn;
 import javax.persistence.OneToMany;
 
-import com.person.subject.Subject;
+import com.student.subject.Subject;
 
 @Entity
-public class Person  {
+public class Student  {
 
 	@Id
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -23,13 +23,13 @@ public class Person  {
 	private String firstName;
 	private String lastName;
 	
-	@JoinColumn(name="person_id",referencedColumnName="id")
+	@JoinColumn(name="student_id",referencedColumnName="id")
 	@OneToMany(cascade = CascadeType.ALL)
 	private Set<Subject> subjects = new HashSet<>();
 	
-	public Person() {}
+	public Student() {}
 
-	public Person(String firstName, String lastName) {
+	public Student(String firstName, String lastName) {
 		this.firstName = firstName;
 		this.lastName = lastName;
 	}

@@ -1,6 +1,6 @@
-package com.person;
+package com.student;
 
-public class NewPerson {
+public class NewStudent {
 	private String firstName;
 	private String lastName;
 	public String getFirstName() {
@@ -15,10 +15,10 @@ public class NewPerson {
 	public void setLastName(String lastName) {
 		this.lastName = lastName;
 	}
-	public NewPerson(String firstName, String lastName) {
+	public NewStudent(String firstName, String lastName) {
 		this.firstName = firstName;
 		this.lastName = lastName;
 	}
-	public NewPerson() {}
+	public NewStudent() {}
 	
 }

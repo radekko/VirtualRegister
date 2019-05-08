@@ -1,4 +1,4 @@
-package com.person.subject;
+package com.student.subject;
 
 import java.util.Optional;
 import java.util.Set;
@@ -10,8 +10,8 @@ import org.springframework.stereotype.Repository;
 
 @Repository
 public interface SubjectRepository extends JpaRepository<Subject, Long>{
-	@Query("SELECT s FROM Subject s WHERE s.person.id = :personId AND s.subjectName = :subjectName")
-	Optional<Subject> findByPersonIdAndSubjectName(@Param("personId") Long personId, @Param("subjectName") String subjectName);
+	@Query("SELECT s FROM Subject s WHERE s.student.id = :studentId AND s.subjectName = :subjectName")
+	Optional<Subject> findByStudentIdAndSubjectName(@Param("studentId") Long studentId, @Param("subjectName") String subjectName);
 
-	Set<Subject> findByPersonId(Long personId);
+	Set<Subject> findByStudentId(Long studentId);
 }

@@ -1,4 +1,4 @@
-package com.person.subject;
+package com.student.subject;
 
 import java.util.List;
 

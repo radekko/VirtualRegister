@@ -1,4 +1,4 @@
-package com.person;
+package com.student;
 
 import java.util.HashMap;
 import java.util.Map;

@@ -1,15 +1,15 @@
-package com.person;
+package com.student;
 
 import org.springframework.hateoas.core.Relation;
 
-@Relation(value="person", collectionRelation="persons")
-public class PersonResource extends EmbeddedResourceSupport {
+@Relation(value="student", collectionRelation="students")
+public class StudentResource extends EmbeddedResourceSupport {
 	private String firstName;
 	private String lastName;
 	
-	public PersonResource(Person person) {
-		this.firstName = person.getFirstName();
-		this.lastName = person.getLastName();
+	public StudentResource(Student student) {
+		this.firstName = student.getFirstName();
+		this.lastName = student.getLastName();
 	}
 
 	public String getFirstName() {

@@ -1,4 +1,4 @@
-package com.person.subject;
+package com.student.subject;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -11,7 +11,7 @@ import org.springframework.hateoas.ResourceSupport;
 import org.springframework.hateoas.Resources;
 import org.springframework.stereotype.Component;
 
-import com.person.PersonLinkProvider;
+import com.student.StudentLinkProvider;
 
 @Component
 public class SubjectsCollectionAssembler {
@@ -33,7 +33,7 @@ public class SubjectsCollectionAssembler {
 	private List<Link> getLinks(Set<Subject> subjects){
 		List<Link> links = new ArrayList<>();
 		if(!subjects.isEmpty())
-			links.add(PersonLinkProvider.linkToSubjectsCollection(subjects.iterator().next().getPerson()));
+			links.add(StudentLinkProvider.linkToSubjectsCollection(subjects.iterator().next().getStudent()));
 		return links;
 	}
 	
@@ -41,13 +41,13 @@ public class SubjectsCollectionAssembler {
 		
 		public ResourceSupport toResource(Subject subject) {
 			ResourceSupport subjectResource = new SubjectResource(subject);
-			if(isSubjectAssignedToPerson(subject))
+			if(isSubjectAssignedToStudent(subject))
 				subjectResource.add(SubjectLinkProvider.linkToSubject(subject));
 			return subjectResource;
 		}
 
-		private boolean isSubjectAssignedToPerson(Subject subject) {
-			return subject.getPerson() != null;
+		private boolean isSubjectAssignedToStudent(Subject subject) {
+			return subject.getStudent() != null;
 		}
 	}
 }

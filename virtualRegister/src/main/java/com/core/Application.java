@@ -11,14 +11,14 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.ComponentScan;
 import org.springframework.data.jpa.repository.config.EnableJpaRepositories;
 
-import com.person.Person;
-import com.person.PersonRepository;
-import com.person.subject.Degree;
-import com.person.subject.Subject;
+import com.student.Student;
+import com.student.StudentRepository;
+import com.student.subject.Degree;
+import com.student.subject.Subject;
 
-@ComponentScan({"com.person","com.core","com.logging"})
-@EnableJpaRepositories("com.person")
-@EntityScan("com.person")
+@ComponentScan({"com.student","com.core","com.logging"})
+@EnableJpaRepositories("com.student")
+@EntityScan("com.student")
 @SpringBootApplication
 public class Application 
 {
@@ -28,21 +28,21 @@ public class Application
     }
     
     @Bean
-	public CommandLineRunner demo(PersonRepository repository) {
+	public CommandLineRunner demo(StudentRepository repository) {
     	return (args) -> {
     		Subject subject = new Subject("Math",new ArrayList<>(Arrays.asList(Degree.THREE, Degree.THREE_AND_HALF, Degree.THREE_AND_HALF)));
     		Subject subject2 = new Subject("English",new ArrayList<>(Arrays.asList(Degree.FOUR, Degree.FOUR_AND_HALF, Degree.FIVE)));
     		Subject subject3 = new Subject("English",new ArrayList<>(Arrays.asList(Degree.TWO, Degree.THREE, Degree.THREE)));
     		
-			Person person = new Person("Jan", "Nowak");
-			Person person2 = new Person("Marcin", "Kowalski");
+			Student student = new Student("Jan", "Nowak");
+			Student student2 = new Student("Marcin", "Kowalski");
 			
-			person.addSubjects(subject);
-			person.addSubjects(subject2);
-			person2.addSubjects(subject3);
+			student.addSubjects(subject);
+			student.addSubjects(subject2);
+			student2.addSubjects(subject3);
 			
-			repository.save(person);
-			repository.save(person2);
+			repository.save(student);
+			repository.save(student2);
 		};
     }
 }

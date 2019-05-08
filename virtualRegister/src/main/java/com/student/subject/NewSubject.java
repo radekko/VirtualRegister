@@ -1,4 +1,4 @@
-package com.person.subject;
+package com.student.subject;
 
 public class NewSubject {
 	
