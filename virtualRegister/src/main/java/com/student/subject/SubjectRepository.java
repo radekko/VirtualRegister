@@ -10,7 +10,7 @@ import org.springframework.stereotype.Repository;
 
 @Repository
 public interface SubjectRepository extends JpaRepository<Subject, Long>{
-	@Query("SELECT s FROM Subject s WHERE s.student.id = :studentId AND s.subjectName = :subjectName")
+	@Query("SELECT s FROM Subject s WHERE s.student.id = :studentId AND s.subjectDetails.subjectName = :subjectName")
 	Optional<Subject> findByStudentIdAndSubjectName(@Param("studentId") Long studentId, @Param("subjectName") String subjectName);
 
 	Set<Subject> findByStudentId(Long studentId);

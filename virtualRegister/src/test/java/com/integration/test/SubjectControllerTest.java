@@ -23,22 +23,22 @@ public class SubjectControllerTest extends StudentRootControllerTest{
 	private final String PATH_TO_SUBJECT_COLLECTION = "_embedded.subjects[%1$s].";
 	private final String LINK_TO_ROOT_SUBJECTS = LINKS+"subjectsForStudent.href";
 	private final String NOT_EXISTING_SUBJECT_NAME = "not existing";
-	private final String SEARCH_All_DEGREES = "degree. findAll {it}.value";
+	private final String SEARCH_All_DEGREES = "marks. findAll {it}.value";
 
 	private String subjectName;
-	private static float degreeToAdd = 3.0f;
-	private float notExistingDegree = 2.5f;
+	private static float markToAdd = 3.0f;
+	private float notExistingMark = 2.5f;
 	
 	private final String ENTITY_NOT_EXIST_TEMPLATE = "Entity '%d' does not exist";
 	private final String MESSAGE_IF_PERSON_NOT_EXIST = String.format(ENTITY_NOT_EXIST_TEMPLATE, notExistingStudentId);
-	private final String DEGREE_IS_NOT_VALID_TEMPLATE = "Degree '%f' is not valid";
-	private final String MESSAGE_IF_DEGREE_IS_OUT_OF_RANGE = String.format(DEGREE_IS_NOT_VALID_TEMPLATE, notExistingDegree);
+	private final String DEGREE_IS_NOT_VALID_TEMPLATE = "Mark '%f' is not valid";
+	private final String MESSAGE_IF_DEGREE_IS_OUT_OF_RANGE = String.format(DEGREE_IS_NOT_VALID_TEMPLATE, notExistingMark);
 	
 	@Before
 	public void setUp() {
 		super.setUp();
 		Set<Subject> sortedSubjects = new TreeSet<>(subjectRepository.findByStudentId(firstStudentId));
-		subjectName = sortedSubjects.iterator().next().getSubjectName();
+		subjectName = sortedSubjects.iterator().next().getSubjectDetails().getSubjectName();
 	}
 	
 	@Test
@@ -51,13 +51,15 @@ public class SubjectControllerTest extends StudentRootControllerTest{
 
 		.root(getSubjectRootIfEmbedded(0))
 			.body("subjectName", equalTo("English"))
-			.body("degree", hasSize(3))
+			.body("ects", equalTo(6))
+			.body("marks", hasSize(3))
 			.body(SEARCH_All_DEGREES, contains(4.0f,4.5f,5.0f))
 			.body(LINK_TO_SELF, equalTo(getConcreteSubjectLinkForChosenStudent(firstStudentId,"English")))
 			
 		.root(getSubjectRootIfEmbedded(1))
 			.body("subjectName", equalTo("Math"))
-			.body("degree", hasSize(3))
+			.body("ects", equalTo(5))
+			.body("marks", hasSize(3))
 			.body(SEARCH_All_DEGREES, contains(3.0f,3.5f,3.5f))
 			.body(LINK_TO_SELF, equalTo(getConcreteSubjectLinkForChosenStudent(firstStudentId,"Math")))
 
@@ -73,7 +75,8 @@ public class SubjectControllerTest extends StudentRootControllerTest{
 			.statusCode(OK)
 			.contentType(JSON)
 			.body("subjectName", equalTo("English"))
-			.body("degree", hasSize(3))
+			.body("ects", equalTo(6))
+			.body("marks", hasSize(3))
 			.body(SEARCH_All_DEGREES, contains(4.0f,4.5f,5.0f))
 			.body(LINK_TO_SELF, equalTo(getConcreteSubjectLinkForChosenStudent(firstStudentId,"English")))
 			.body(LINK_TO_ROOT_SUBJECTS, equalTo(getSubjectCollectionLinkForChosenStudent(firstStudentId)));
@@ -89,32 +92,42 @@ public class SubjectControllerTest extends StudentRootControllerTest{
 	}
 	
 	@Test
-	public void addDegreesToChosenStudent() {
-		Response res = sendDegree(firstStudentId,subjectName,NO_CONTENT, degreeToAdd);
+	public void addMarksToChosenStudent() {
+		Response res = sendMark(firstStudentId,subjectName,NO_CONTENT, markToAdd);
 		isResponseBodyEmpty(res);
 
-		verifyRecentlyAddedDegree(degreeToAdd);
+		when()
+			.get("/students/{id}/subjects/{subjectName}",firstStudentId,subjectName)
+		.then()
+			.statusCode(OK)
+			.contentType(JSON)
+			.body("subjectName", equalTo("English"))
+			.body("ects", equalTo(6))
+			.body("marks", hasSize(4))
+			.body(SEARCH_All_DEGREES, hasItems(4.0f,4.5f,5.0f,markToAdd))
+			.body(LINK_TO_SELF, equalTo(getConcreteSubjectLinkForChosenStudent(firstStudentId,"English")))
+			.body(LINK_TO_ROOT_SUBJECTS, equalTo(getSubjectCollectionLinkForChosenStudent(firstStudentId)));
 	}
 
 	@Test
-	public void addDegreesToNotExistingStudent() {
-		Response res = sendDegree(notExistingStudentId,NOT_EXISTING_SUBJECT_NAME,NOT_FOUND, degreeToAdd);
+	public void addMarksToNotExistingStudent() {
+		Response res = sendMark(notExistingStudentId,NOT_EXISTING_SUBJECT_NAME,NOT_FOUND, markToAdd);
 		isResponseBodyEmpty(res);
 		
 		assertThat(res.jsonPath().get("message"), equalTo(MESSAGE_IF_PERSON_NOT_EXIST));
 	}
 	
 	@Test
-	public void addAsideFromRangeDegree() {
-		Response res = sendDegree(firstStudentId,subjectName,BAD_REQUEST, notExistingDegree );
+	public void addAsideFromRangeMark() {
+		Response res = sendMark(firstStudentId,subjectName,BAD_REQUEST, notExistingMark );
 		isResponseBodyEmpty(res);
 		
 		assertThat(res.jsonPath().get("message"), equalTo(MESSAGE_IF_DEGREE_IS_OUT_OF_RANGE));
 	}
 	
-	private Response sendDegree(long studentId, String subjectName, int statusCode, float degreeToAdd) {
+	private Response sendMark(long studentId, String subjectName, int statusCode, float markToAdd) {
 		return given()
-			.contentType(JSON).body(degreeToAdd)
+			.contentType(JSON).body(markToAdd)
 		.when()
 			.put("/students/{id}/subjects/{subjectName}", studentId,subjectName)
 		.then()
@@ -123,19 +136,6 @@ public class SubjectControllerTest extends StudentRootControllerTest{
 			.response();
 	}
 	
-	private void verifyRecentlyAddedDegree(Float degree) {
-		when()
-			.get("/students/{id}/subjects/{subjectName}",firstStudentId,subjectName)
-		.then()
-			.statusCode(OK)
-			.contentType(JSON)
-			.body("subjectName", equalTo("English"))
-			.body("degree", hasSize(4))
-			.body(SEARCH_All_DEGREES, hasItems(4.0f,4.5f,5.0f,degree))
-			.body(LINK_TO_SELF, equalTo(getConcreteSubjectLinkForChosenStudent(firstStudentId,"English")))
-			.body(LINK_TO_ROOT_SUBJECTS, equalTo(getSubjectCollectionLinkForChosenStudent(firstStudentId)));
-	}
-
 	// _embedded.subjectResources[%1$s].
 	private String getSubjectRootIfEmbedded(long subjectId) {
 		return String.format(PATH_TO_SUBJECT_COLLECTION,subjectId);

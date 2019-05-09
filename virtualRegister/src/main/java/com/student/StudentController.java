@@ -19,9 +19,11 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.exceptions.EntityAlreadyExistException;
 import com.exceptions.EntityNotExistException;
-import com.student.subject.NewSubject;
 import com.student.subject.Subject;
+import com.subjectDetails.SubjectDetails;
+import com.subjectDetails.SubjectDetailsRepository;
 
 @RestController
 @Transactional
@@ -31,12 +33,15 @@ public class StudentController {
 	private final StudentsCollectionAssembler studentsCollectionAssembler;
 	private final StudentsAssembler studentsAssembler;
 	private final StudentRepository studentRepository;
+	private final SubjectDetailsRepository subjectDetailsRepository;
 
-	public StudentController(StudentsCollectionAssembler studentsCollectionAssembler, StudentsAssembler studentsAssembler,
-			StudentRepository studentRepository) {
+	public StudentController(StudentsCollectionAssembler studentsCollectionAssembler,
+			StudentsAssembler studentsAssembler, StudentRepository studentRepository,
+			SubjectDetailsRepository subjectDetailsRepository) {
 		this.studentsCollectionAssembler = studentsCollectionAssembler;
 		this.studentsAssembler = studentsAssembler;
 		this.studentRepository = studentRepository;
+		this.subjectDetailsRepository = subjectDetailsRepository;
 	}
 
 	@GetMapping(produces = MediaType.APPLICATION_JSON_VALUE)
@@ -63,35 +68,33 @@ public class StudentController {
 	
 	@PutMapping(value="/{studentId}/subjects")
 	public HttpEntity<Void> addSubjectToStudent(
-			@PathVariable Long studentId, @RequestBody NewSubject newSubject) throws EntityNotExistException{
-		
-		Student student = studentRepository.findById(studentId).orElseThrow(() -> new EntityNotExistException(studentId));
-		if(checkIfSubjectNotExist(student, newSubject)) {
-			addNewSubjectToStudent(student, newSubject);
-			studentRepository.save(student);
-		}
+			@PathVariable Long studentId, @RequestBody String subjectName)
+					throws EntityNotExistException, EntityAlreadyExistException{
 
+		Student student = studentRepository.findById(studentId).orElseThrow(() -> new EntityNotExistException(studentId));
+
+		if(checkIfSubjectDetailsHasAlreadyAddedToPerson(subjectName, student))
+			throw new EntityAlreadyExistException(subjectName);
+		
+		SubjectDetails sd = subjectDetailsRepository
+						   .findBySubjectName(subjectName)
+						   .orElseThrow(() -> new EntityNotExistException(subjectName));
+		
+		student.addSubjects(new Subject(sd,student));
 		return ResponseEntity.noContent().build();
+	}
+
+	private boolean checkIfSubjectDetailsHasAlreadyAddedToPerson(String subjectName, Student student) {
+		return student.getSubjects().stream().map(Subject::getSubjectDetails).anyMatch(sd -> sd.getSubjectName().equals(subjectName));
 	}
 	
 	@PutMapping(value="/{studentId}")
 	public HttpEntity<Void> renameStudent(@RequestBody NewStudent newStudent, @PathVariable Long studentId) throws EntityNotExistException {
 		studentRepository.findById(studentId)
-						.map(
-								changeStudent(newStudent)
-								.andThen(updateChangedStudentInDatabase())
-						)
-						.orElseThrow(() -> new EntityNotExistException(studentId));
+						 .map(changeStudent(newStudent))
+						 .orElseThrow(() -> new EntityNotExistException(studentId));
 		
 		return ResponseEntity.noContent().build();
-	}
-	
-	private boolean checkIfSubjectNotExist(Student p, NewSubject newSubject) {
-		return p.getSubjects().stream().noneMatch(s -> s.getSubjectName().equals(newSubject.getSubjectName()));
-	}
-
-	private void addNewSubjectToStudent(Student p, NewSubject newSubject) {
-		p.addSubjects(new Subject(newSubject.getSubjectName(),p));
 	}
 
 	private Function<Student, Student> changeStudent(NewStudent newStudent) {
@@ -103,9 +106,4 @@ public class StudentController {
 		p.setLastName(newStudent.getLastName());
 		return p;
 	}
-	
-	private Function<Student, Student> updateChangedStudentInDatabase() {
-		return studentRepository :: save;
-	}
-	
 }

@@ -15,7 +15,7 @@ public class SubjectLinkProvider {
 	// students/{studentId}/subjects/{subjectName} - self
 	public static Link linkToSubject(Subject subject) {
 		long studentId = subject.getStudent().getId();
-		String subjectName = subject.getSubjectName();
+		String subjectName = subject.getSubjectDetails().getSubjectName();
 
 		Link link;
 		try {
@@ -36,5 +36,4 @@ public class SubjectLinkProvider {
 		
 		return link;
 	}
-	
 }

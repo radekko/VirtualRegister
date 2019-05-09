@@ -16,7 +16,7 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
-import com.exceptions.DegreeFormatException;
+import com.exceptions.MarkFormatException;
 import com.exceptions.EntityNotExistException;
 
 @RestController
@@ -53,31 +53,25 @@ public class SubjectController {
 	}
 	
 	@PutMapping(value="/{subjectName}")
-	public HttpEntity<Void> addDegreeToSubjectForChoosenStudent(
-			@PathVariable Long studentId, @PathVariable String subjectName, @RequestBody Float degree)
-					throws EntityNotExistException, DegreeFormatException {
+	public HttpEntity<Void> addMarkToSubjectForChoosenStudent(
+			@PathVariable Long studentId, @PathVariable String subjectName, @RequestBody Float mark)
+					throws EntityNotExistException, MarkFormatException {
 
-		Degree degreeToAdd = Degree.getByValue(degree).orElseThrow(() -> new DegreeFormatException(degree));
+		Mark markToAdd = Mark.getByValue(mark).orElseThrow(() -> new MarkFormatException(mark));
 		
 		subjectRepository.findByStudentIdAndSubjectName(studentId, subjectName)
-						 .map(updateSubject(degreeToAdd)
-						 .andThen(storeSubject()))
+						 .map(updateSubject(markToAdd))
 						 .orElseThrow(() -> new EntityNotExistException(studentId));
 		
 		return ResponseEntity.noContent().build();
 	}
 	
-	private Function<Subject,Subject> updateSubject(Degree degree) {
-		return s -> addDegresToSubject(degree, s);
+	private Function<Subject,Subject> updateSubject(Mark mark) {
+		return s -> addDegresToSubject(mark, s);
 	}
 
-	private Subject addDegresToSubject(Degree degree, Subject s) {
-		s.addDegree(degree);
+	private Subject addDegresToSubject(Mark mark, Subject s) {
+		s.addMark(mark);
 		return s;
 	}
-	
-	private Function<Subject,Subject> storeSubject() {
-		return subjectRepository :: saveAndFlush;
-	}
-
 }

@@ -1,7 +1,7 @@
 package com.student;
 
-import java.util.ArrayList;
-import java.util.List;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 import org.springframework.hateoas.Link;
 import org.springframework.hateoas.ResourceSupport;
@@ -20,7 +20,7 @@ public class StudentsAssembler {
 
 	public ResourceSupport toResource(Student student) {
 		StudentResource studentResource = new StudentResource(student);
-		studentResource.add(getLinks(student));
+		studentResource.add(getLinks(student).collect(Collectors.toList()));
 		
 		Resources<ResourceSupport> subjectResource = subjectsCollectionAssembler.toResource(student.getSubjects());
 		studentResource.embedResource("studentSubjects", subjectResource);
@@ -28,10 +28,21 @@ public class StudentsAssembler {
 		return studentResource;
 	}
 	
-	private List<Link> getLinks(Student student){
-		List<Link> links = new ArrayList<>();
-		links.add(StudentLinkProvider.linkToStudent(student));
-		links.add(StudentLinkProvider.linkToStudentCollection());
-		return links;
+	public ResourceSupport toEmbeddedResource(Student student) {
+		ResourceSupport studentResource = new StudentResource(student);
+		studentResource.add(getEmbeddedLinks(student).collect(Collectors.toList()));
+		return studentResource;
+	}
+	
+	private Stream<Link> getLinks(Student student){
+		return Stream.of(
+				StudentLinkProvider.linkToStudent(student),
+				StudentLinkProvider.linkToStudentCollection());
+	}
+
+	private Stream<Link> getEmbeddedLinks(Student student){
+		return Stream.of(
+				StudentLinkProvider.linkToStudent(student),
+				StudentLinkProvider.linkToSubjectsCollection(student));
 	}
 }

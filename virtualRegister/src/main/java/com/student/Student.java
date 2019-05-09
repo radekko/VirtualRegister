@@ -8,12 +8,14 @@ import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
-import javax.persistence.JoinColumn;
+import javax.persistence.NamedAttributeNode;
+import javax.persistence.NamedEntityGraph;
 import javax.persistence.OneToMany;
 
 import com.student.subject.Subject;
 
 @Entity
+@NamedEntityGraph(name = "Student.subjects", attributeNodes = @NamedAttributeNode("subjects"))
 public class Student  {
 
 	@Id
@@ -23,8 +25,7 @@ public class Student  {
 	private String firstName;
 	private String lastName;
 	
-	@JoinColumn(name="student_id",referencedColumnName="id")
-	@OneToMany(cascade = CascadeType.ALL)
+	@OneToMany(cascade = CascadeType.ALL, mappedBy = "student")
 	private Set<Subject> subjects = new HashSet<>();
 	
 	public Student() {}

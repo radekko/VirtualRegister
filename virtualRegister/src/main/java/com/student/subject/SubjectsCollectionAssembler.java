@@ -16,16 +16,16 @@ import com.student.StudentLinkProvider;
 @Component
 public class SubjectsCollectionAssembler {
 
-	private final EmbeddedSubjectAssambler embeddedSubjectAssambler;
-
-	public SubjectsCollectionAssembler() {
-		this.embeddedSubjectAssambler = new EmbeddedSubjectAssambler();
+	private final SubjectsAssembler subjectsAssembler;
+	
+	public SubjectsCollectionAssembler(SubjectsAssembler subjectsAssembler) {
+		this.subjectsAssembler = subjectsAssembler;
 	}
 
 	public Resources<ResourceSupport> toResource(Set<Subject> set) {
 		Set<Subject> sortedSubjects = new TreeSet<>(set);
 		List<ResourceSupport> subjectResourcesList = 
-				sortedSubjects.stream().map(embeddedSubjectAssambler::toResource).collect(Collectors.toList());
+				sortedSubjects.stream().map(subjectsAssembler::toEmbeddedResource).collect(Collectors.toList());
 		
 		return new Resources<ResourceSupport>(subjectResourcesList,getLinks(set));
 	}
@@ -35,19 +35,5 @@ public class SubjectsCollectionAssembler {
 		if(!subjects.isEmpty())
 			links.add(StudentLinkProvider.linkToSubjectsCollection(subjects.iterator().next().getStudent()));
 		return links;
-	}
-	
-	private class EmbeddedSubjectAssambler {
-		
-		public ResourceSupport toResource(Subject subject) {
-			ResourceSupport subjectResource = new SubjectResource(subject);
-			if(isSubjectAssignedToStudent(subject))
-				subjectResource.add(SubjectLinkProvider.linkToSubject(subject));
-			return subjectResource;
-		}
-
-		private boolean isSubjectAssignedToStudent(Subject subject) {
-			return subject.getStudent() != null;
-		}
 	}
 }

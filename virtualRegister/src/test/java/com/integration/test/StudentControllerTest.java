@@ -4,9 +4,9 @@ import static com.jayway.restassured.RestAssured.given;
 import static com.jayway.restassured.RestAssured.when;
 import static com.jayway.restassured.RestAssured.withArgs;
 import static com.jayway.restassured.http.ContentType.JSON;
+import static org.hamcrest.Matchers.contains;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.hasItems;
-import static org.hamcrest.Matchers.contains;
 
 import org.junit.Before;
 import org.junit.BeforeClass;
@@ -14,7 +14,7 @@ import org.junit.Test;
 
 import com.jayway.restassured.response.Response;
 import com.student.NewStudent;
-import com.student.subject.NewSubject;
+import com.student.subject.NewSubjectDetails;
 
 public class StudentControllerTest extends StudentRootControllerTest {
 	
@@ -26,18 +26,25 @@ public class StudentControllerTest extends StudentRootControllerTest {
 	
 	private final String PATH_TO_SUBJECT_NAME = PATH_TO_SUBJECTS + "subjectName";
 	private final String SEARCH_BY_SUBJECT_ROOT_PATH = PATH_TO_SUBJECTS + "find {it.subjectName == '%s'}";
-	private final String SEARCH_All_DEGREES = "degree. findAll {it}.value";
+	private final String SEARCH_All_DEGREES = "marks. findAll {it}.value";
 	
 	private final String MESSAGE_FORMAT = "Entity '%d' does not exist";
 	private final String MESSAGE_IF_PERSON_NOT_EXIST = String.format(MESSAGE_FORMAT, notExistingStudentId);
 	
+	private static final String MESSAGE_FORMAT_STRING = "Entity '%s' does not exist";
+	private final String MESSAGE_IF_SUBJECT_DETAILS_NOT_EXIST = String.format(MESSAGE_FORMAT_STRING, notExistingSubjectName);
+	
+	private static final String MESSAGE_FORMAT_STRING_2 = "Entity '%s' in this student already exist";
+	private final String MESSAGE_IF_SUBJECT_ALREADY_EXIST_IN_PERSON = String.format(MESSAGE_FORMAT_STRING_2, alreadyExistSubjectName);
+	
 	private static NewStudent newStudent;
-	private static NewSubject newSubject;
+	private static NewSubjectDetails newSubject;
+	private static String notAssignedSubjectNameToAnyPerson = "Chemistry";
 	
 	@BeforeClass
 	public static void beforeAll() {
 		newStudent = new NewStudent("Marcin","Kot");
-		newSubject = new NewSubject("Physics");
+		newSubject = new NewSubjectDetails("Physics",7);
 	}
 	
 	@Before
@@ -102,25 +109,17 @@ public class StudentControllerTest extends StudentRootControllerTest {
 	
 	@Test
 	public void createNewStudent(){
-		Response response = verifyPostNewStudent();
+		Response response = given()
+				.contentType(JSON).body(newStudent)
+		   .when()
+		   		.post("/students")
+		   	.then()
+		   		.statusCode(CREATED)
+			.extract()
+				.response();
 		isResponseBodyEmpty(response);
 
 		String newStudentLocation = response.getHeader("location");
-		verifyRecentlyCreatedStudent(newStudent, newStudentLocation);
-	}
-
-	private Response verifyPostNewStudent() {
-		return given()
-					.contentType(JSON).body(newStudent)
-			   .when()
-			   		.post("/students")
-			   	.then()
-			   		.statusCode(CREATED)
-				.extract()
-					.response();
-	}
-	
-	private void verifyRecentlyCreatedStudent(NewStudent newStudent, String newStudentLocation) {
 		when()
 			.get(newStudentLocation)
 		.then()
@@ -133,11 +132,51 @@ public class StudentControllerTest extends StudentRootControllerTest {
 	}
 
 	@Test
-	public void addSubjectToStudent() {
-		Response response = verifyPutNewSubject();
+	public void addExistingSubjectToStudent() {
+		Response response = given()
+			.contentType(JSON).body(notAssignedSubjectNameToAnyPerson)
+		.when()
+			.put("/students/{id}/subjects", firstStudentId)
+		.then()
+			.statusCode(NO_CONTENT)
+		.extract()
+			.response();
 		isResponseBodyEmpty(response);
 		
-		verifyRecentlyPutSubject();
+		when()
+			.get("/students/{id}",firstStudentId)
+		.then()
+			.statusCode(OK)
+			.contentType(JSON)
+			.body("firstName", equalTo("Jan"))
+			.body("lastName", equalTo("Nowak"))
+			.body(PATH_TO_SUBJECT_NAME, hasItems("Math","English","Chemistry"))
+			.body(LINK_TO_SELF, equalTo(getConcreteStudentLink(firstStudentId)))
+			.body(LINK_TO_PERSONS_COLLECTION, equalTo(getStudentCollectionLink()));
+	}
+	
+	@Test
+	public void addNotExistingSubjectToStudent() {
+		given()
+			.contentType(JSON).body(notExistingSubjectName)
+		.when()
+			.put("/students/{id}/subjects", firstStudentId)
+		.then()
+			.statusCode(NOT_FOUND)
+			.contentType(JSON)
+			.body("message",equalTo(MESSAGE_IF_SUBJECT_DETAILS_NOT_EXIST));
+	}
+	
+	@Test
+	public void addAlreadyExistingSubjectInStudent() {
+		given()
+			.contentType(JSON).body("Math")
+		.when()
+			.put("/students/{id}/subjects", firstStudentId)
+		.then()
+			.statusCode(CONFLICT)
+			.contentType(JSON)
+			.body("message",equalTo(MESSAGE_IF_SUBJECT_ALREADY_EXIST_IN_PERSON));
 	}
 	
 	@Test
@@ -152,36 +191,21 @@ public class StudentControllerTest extends StudentRootControllerTest {
 			.body("message",equalTo(MESSAGE_IF_PERSON_NOT_EXIST));
 	}
 
-	private Response verifyPutNewSubject() {
-		return given()
-					.contentType(JSON).body(newSubject)
-				.when()
-					.put("/students/{id}/subjects", firstStudentId)
-				.then()
-					.statusCode(NO_CONTENT)
-				.extract()
-					.response();
-	}
-
-	private void verifyRecentlyPutSubject() {
-		when()
-			.get("/students/{id}",firstStudentId)
-		.then()
-			.statusCode(OK)
-			.contentType(JSON)
-			.body("firstName", equalTo("Jan"))
-			.body("lastName", equalTo("Nowak"))
-			.body(PATH_TO_SUBJECT_NAME, hasItems("Math","English","Physics"))
-			.body(LINK_TO_SELF, equalTo(getConcreteStudentLink(firstStudentId)))
-			.body(LINK_TO_PERSONS_COLLECTION, equalTo(getStudentCollectionLink()));
-	}
-
 	@Test
 	public void renameStudent() {
 		Response res = verifyChangeStudentDetails(newStudent,firstStudentId,NO_CONTENT);
 		isResponseBodyEmpty(res);
 		
-		verifyRecentlyChangedStudent(newStudent);
+		when()
+			.get("/students/{id}",firstStudentId)
+		.then()
+			.statusCode(OK)
+			.contentType(JSON)
+			.body("firstName", equalTo(newStudent.getFirstName()))
+			.body("lastName", equalTo(newStudent.getLastName()))
+			.body(PATH_TO_SUBJECT_NAME, hasItems("Math","English"))
+			.body(LINK_TO_SELF, equalTo(getConcreteStudentLink(firstStudentId)))
+			.body(LINK_TO_PERSONS_COLLECTION, equalTo(getStudentCollectionLink()));
 	}
 	
 	@Test
@@ -203,22 +227,8 @@ public class StudentControllerTest extends StudentRootControllerTest {
 					.response();
 	}
 
-	private void verifyRecentlyChangedStudent(NewStudent newStudent) {
-		when()
-			.get("/students/{id}",firstStudentId)
-		.then()
-			.statusCode(OK)
-			.contentType(JSON)
-			.body("firstName", equalTo(newStudent.getFirstName()))
-			.body("lastName", equalTo(newStudent.getLastName()))
-			.body(PATH_TO_SUBJECT_NAME, hasItems("Math","English"))
-			.body(LINK_TO_SELF, equalTo(getConcreteStudentLink(firstStudentId)))
-			.body(LINK_TO_PERSONS_COLLECTION, equalTo(getStudentCollectionLink()));
-	}
-	
 	// _embedded.studentResources[{studentId}].
 	private String getStudentRootIfEmbedded(long studentId) {
 		return String.format(PATH_TO_PERSON_COLLECTION,studentId);
 	}
-	
 }
