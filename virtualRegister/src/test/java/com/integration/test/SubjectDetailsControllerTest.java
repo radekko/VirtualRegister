@@ -26,10 +26,12 @@ public class SubjectDetailsControllerTest extends AbstractControllerTest{
 	private SubjectDetailsRepository subjectDetailsRepository;
 	
 	private static NewSubjectDetails newSubjectDetails;
+	private static NewSubjectDetails newSubjectDetailsWithEmptyName;
 	
 	@BeforeClass
 	public static void beforeAll() {
 		newSubjectDetails = new NewSubjectDetails("Biology",2);
+		newSubjectDetailsWithEmptyName = new NewSubjectDetails("",2);
 	}
 	
 	@Before
@@ -111,6 +113,17 @@ public class SubjectDetailsControllerTest extends AbstractControllerTest{
 		given()
 			.contentType(JSON)
 			.body(newSubjectDetails)
+		.when()
+			.post("/subject_details")
+		.then()
+			.statusCode(BAD_REQUEST);
+	}
+	
+	@Test
+	public void testPostSubjectDetailsWithEmptySubjectName() {
+		given()
+			.contentType(JSON)
+			.body(newSubjectDetailsWithEmptyName)
 		.when()
 			.post("/subject_details")
 		.then()

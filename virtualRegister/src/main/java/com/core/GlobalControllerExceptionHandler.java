@@ -3,6 +3,7 @@ package com.core;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 
@@ -31,6 +32,11 @@ public class GlobalControllerExceptionHandler {
 	
 	@ExceptionHandler({ DataIntegrityViolationException.class })
 	public ResponseEntity<ExceptionObject> handleConstraintViolation(DataIntegrityViolationException e) {
+		return new ResponseEntity<>(new ExceptionObject(e.getMessage()), HttpStatus.BAD_REQUEST);
+	}
+	
+	@ExceptionHandler(MethodArgumentNotValidException.class)
+	public ResponseEntity<ExceptionObject> handleValidationExceptions(MethodArgumentNotValidException e) {
 		return new ResponseEntity<>(new ExceptionObject(e.getMessage()), HttpStatus.BAD_REQUEST);
 	}
 }

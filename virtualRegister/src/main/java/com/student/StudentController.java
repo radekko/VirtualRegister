@@ -5,6 +5,8 @@ import java.net.URISyntaxException;
 import java.util.function.Function;
 
 import javax.transaction.Transactional;
+import javax.validation.Valid;
+import javax.validation.constraints.NotBlank;
 
 import org.springframework.hateoas.ResourceSupport;
 import org.springframework.hateoas.Resources;
@@ -60,7 +62,7 @@ public class StudentController {
 	}
 	
 	@PostMapping
-	public HttpEntity<Void> createNewStudent(@RequestBody NewStudent newStudent) throws URISyntaxException {
+	public HttpEntity<Void> createNewStudent(@Valid @RequestBody NewStudent newStudent) throws URISyntaxException {
 		Student p = studentRepository.save(new Student(newStudent.getFirstName(),newStudent.getLastName()));
 		ResourceSupport res = studentsAssembler.toResource(p);
 		return ResponseEntity.created(new URI(res.getId().expand().getHref())).build();
@@ -68,7 +70,7 @@ public class StudentController {
 	
 	@PutMapping(value="/{studentId}/subjects")
 	public HttpEntity<Void> addSubjectToStudent(
-			@PathVariable Long studentId, @RequestBody String subjectName)
+			@PathVariable Long studentId, @NotBlank @RequestBody String subjectName)
 					throws EntityNotExistException, EntityAlreadyExistException{
 
 		Student student = studentRepository.findById(studentId).orElseThrow(() -> new EntityNotExistException(studentId));
@@ -89,7 +91,7 @@ public class StudentController {
 	}
 	
 	@PutMapping(value="/{studentId}")
-	public HttpEntity<Void> renameStudent(@RequestBody NewStudent newStudent, @PathVariable Long studentId) throws EntityNotExistException {
+	public HttpEntity<Void> renameStudent(@Valid @RequestBody NewStudent newStudent, @PathVariable Long studentId) throws EntityNotExistException {
 		studentRepository.findById(studentId)
 						 .map(changeStudent(newStudent))
 						 .orElseThrow(() -> new EntityNotExistException(studentId));

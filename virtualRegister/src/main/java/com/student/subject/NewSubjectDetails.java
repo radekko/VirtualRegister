@@ -1,8 +1,13 @@
 package com.student.subject;
 
+import javax.validation.constraints.Min;
+import javax.validation.constraints.NotBlank;
+
 public class NewSubjectDetails {
 	
+	@NotBlank
 	private String subjectName;
+	@Min(value = 0)
 	private int ects;
 	
 	public NewSubjectDetails() {}

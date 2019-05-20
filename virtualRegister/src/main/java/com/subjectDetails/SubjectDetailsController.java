@@ -4,6 +4,7 @@ import java.net.URI;
 import java.net.URISyntaxException;
 
 import javax.transaction.Transactional;
+import javax.validation.Valid;
 
 import org.springframework.hateoas.ResourceSupport;
 import org.springframework.hateoas.Resources;
@@ -56,7 +57,7 @@ public class SubjectDetailsController {
 	}
 	
 	@PostMapping
-	public HttpEntity<Void> addSubjectDetails(@RequestBody NewSubjectDetails newSubjectDetails) throws URISyntaxException {
+	public HttpEntity<Void> addSubjectDetails(@Valid @RequestBody NewSubjectDetails newSubjectDetails) throws URISyntaxException {
 		SubjectDetails s = subjectDetailsRepository.save(new SubjectDetails(newSubjectDetails.getSubjectName(),newSubjectDetails.getEcts()));
 		ResourceSupport res = subjectDetailsAssembler.toResource(s);
 		return ResponseEntity.created(new URI(res.getId().expand().getHref())).build();
