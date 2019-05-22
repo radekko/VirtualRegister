@@ -13,8 +13,9 @@ import org.junit.BeforeClass;
 import org.junit.Test;
 
 import com.jayway.restassured.response.Response;
-import com.student.NewStudent;
-import com.student.subject.NewSubjectDetails;
+
+import student.NewStudent;
+import student.subject.NewSubjectDetails;
 
 public class StudentControllerTest extends StudentRootControllerTest {
 	

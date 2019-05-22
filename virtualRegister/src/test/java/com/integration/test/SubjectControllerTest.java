@@ -16,7 +16,8 @@ import org.junit.Before;
 import org.junit.Test;
 
 import com.jayway.restassured.response.Response;
-import com.student.subject.Subject;
+
+import entities.Subject;
 
 public class SubjectControllerTest extends StudentRootControllerTest{
 

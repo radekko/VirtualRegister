@@ -13,9 +13,10 @@ import org.junit.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 
 import com.jayway.restassured.response.Response;
-import com.student.subject.NewSubjectDetails;
-import com.subjectDetails.SubjectDetails;
-import com.subjectDetails.SubjectDetailsRepository;
+
+import entities.SubjectDetails;
+import student.subject.NewSubjectDetails;
+import subjectDetails.SubjectDetailsRepository;
 
 public class SubjectDetailsControllerTest extends AbstractControllerTest{
 	

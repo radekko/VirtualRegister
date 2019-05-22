@@ -5,13 +5,13 @@ import java.util.List;
 
 import org.springframework.beans.factory.annotation.Autowired;
 
-import com.student.Student;
-import com.student.StudentRepository;
-import com.student.subject.Mark;
-import com.student.subject.Subject;
-import com.student.subject.SubjectRepository;
-import com.subjectDetails.SubjectDetails;
-import com.subjectDetails.SubjectDetailsRepository;
+import entities.Mark;
+import entities.Student;
+import entities.Subject;
+import entities.SubjectDetails;
+import student.StudentRepository;
+import student.subject.SubjectRepository;
+import subjectDetails.SubjectDetailsRepository;
 
 public abstract class StudentRootControllerTest extends AbstractControllerTest{
 	
