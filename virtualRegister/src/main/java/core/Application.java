@@ -17,9 +17,9 @@ import entities.SubjectDetails;
 import student.StudentRepository;
 import subjectDetails.SubjectDetailsRepository;
 
-@ComponentScan({"com.student","com.core","com.logging","com.subjectDetails"})
-@EnableJpaRepositories({"com.student","com.subjectDetails"})
-@EntityScan({"com.student","com.subjectDetails"})
+@ComponentScan({"student","core","logging","subjectDetails"})
+@EnableJpaRepositories({"student","subjectDetails"})
+@EntityScan({"entities"})
 @SpringBootApplication
 public class Application 
 {
