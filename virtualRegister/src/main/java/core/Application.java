@@ -8,6 +8,7 @@ import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.boot.autoconfigure.domain.EntityScan;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.ComponentScan;
+import org.springframework.context.annotation.Profile;
 import org.springframework.data.jpa.repository.config.EnableJpaRepositories;
 
 import entities.Mark;
@@ -17,18 +18,20 @@ import entities.SubjectDetails;
 import student.StudentRepository;
 import subjectDetails.SubjectDetailsRepository;
 
-@ComponentScan({"student","core","logging","subjectDetails"})
+@ComponentScan({"logging","exceptions","student","subjectDetails"})
 @EnableJpaRepositories({"student","subjectDetails"})
 @EntityScan({"entities"})
 @SpringBootApplication
 public class Application 
 {
+	
     public static void main( String[] args )
     {
     	SpringApplication.run(Application.class, args);
     }
     
     @Bean
+    @Profile("!test")
 	public CommandLineRunner demo(StudentRepository repository, SubjectDetailsRepository sdRepo) {
     	return (args) -> {
     		SubjectDetails sd = new SubjectDetails("Math",5);

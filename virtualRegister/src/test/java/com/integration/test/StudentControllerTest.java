@@ -8,6 +8,7 @@ import static org.hamcrest.Matchers.contains;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.hasItems;
 
+import org.junit.After;
 import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
@@ -51,6 +52,11 @@ public class StudentControllerTest extends StudentRootControllerTest {
 	@Before
 	public void setUp() {
 		super.setUp();
+	}
+	
+	@After
+	public void after() {
+		super.after();
 	}
 	
 	@Test

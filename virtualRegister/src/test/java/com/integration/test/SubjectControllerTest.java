@@ -12,6 +12,7 @@ import static org.junit.Assert.assertThat;
 import java.util.Set;
 import java.util.TreeSet;
 
+import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 
@@ -40,6 +41,11 @@ public class SubjectControllerTest extends StudentRootControllerTest{
 		super.setUp();
 		Set<Subject> sortedSubjects = new TreeSet<>(subjectRepository.findByStudentId(firstStudentId));
 		subjectName = sortedSubjects.iterator().next().getSubjectDetails().getSubjectName();
+	}
+	
+	@After
+	public void after() {
+		super.after();
 	}
 	
 	@Test

@@ -1,16 +1,16 @@
-package core;
+package logging;
 
 import org.springframework.boot.context.event.ApplicationStartedEvent;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.ApplicationEvent;
 import org.springframework.context.ApplicationListener;
+import org.springframework.context.annotation.Profile;
 import org.springframework.context.event.ContextRefreshedEvent;
 import org.springframework.stereotype.Component;
 import org.springframework.web.servlet.mvc.method.annotation.RequestMappingHandlerMapping;
 
-import logging.AccessibleEndpoints;
-
 @Component
+@Profile("!test")
 public class EndpointsListener implements ApplicationListener<ApplicationEvent> {
 
 	private final AccessibleEndpoints accessibleEndpoints;

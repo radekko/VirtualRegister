@@ -7,6 +7,7 @@ import static org.hamcrest.Matchers.equalTo;
 
 import java.util.Arrays;
 
+import org.junit.After;
 import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
@@ -40,6 +41,11 @@ public class SubjectDetailsControllerTest extends AbstractControllerTest{
 		super.setUp();
 		cleanUpDatabase();
 		insertSampleData();
+	}
+	
+	@After
+	public void after() {
+		super.after();
 	}
 	
 	@Test
