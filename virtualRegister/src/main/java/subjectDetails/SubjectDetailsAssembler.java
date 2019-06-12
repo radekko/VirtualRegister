@@ -7,17 +7,22 @@ import entities.SubjectDetails;
 
 @Component
 public class SubjectDetailsAssembler {
+	
+	private final SubjectDetailsLinkFactory subjectDetailsLinkFactory;
+	
+	public SubjectDetailsAssembler(SubjectDetailsLinkFactory subjectDetailsLinkFactory) {
+		this.subjectDetailsLinkFactory = subjectDetailsLinkFactory;
+	}
 
 	public ResourceSupport toResource(SubjectDetails subjectDetails) {
-		ResourceSupport subjectDetailsResource = new SubjectDetailsResource(subjectDetails);  
-		subjectDetailsResource.add(SubjectDetailsLinkProvider.linkToSubjectDetails(subjectDetails.getSubjectName()));
-		subjectDetailsResource.add(SubjectDetailsLinkProvider.linkToSubjectDetailsCollection());
+		ResourceSupport subjectDetailsResource = new SubjectDetailsResource(subjectDetails);
+		subjectDetailsResource.add(subjectDetailsLinkFactory.getLinks(subjectDetails));
 		return subjectDetailsResource;
 	}
 	
 	public ResourceSupport toEmbeddedResource(SubjectDetails subjectDetails) {
 		ResourceSupport subjectDetailsResource = new SubjectDetailsResource(subjectDetails);  
-		subjectDetailsResource.add(SubjectDetailsLinkProvider.linkToSubjectDetails(subjectDetails.getSubjectName()));
+		subjectDetailsResource.add(subjectDetailsLinkFactory.getEmbeddedLinks(subjectDetails));
 		return subjectDetailsResource;
 	}
 }

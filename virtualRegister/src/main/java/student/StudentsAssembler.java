@@ -1,9 +1,5 @@
 package student;
 
-import java.util.stream.Collectors;
-import java.util.stream.Stream;
-
-import org.springframework.hateoas.Link;
 import org.springframework.hateoas.ResourceSupport;
 import org.springframework.hateoas.Resources;
 import org.springframework.stereotype.Component;
@@ -14,36 +10,28 @@ import student.subject.SubjectsCollectionAssembler;
 @Component
 public class StudentsAssembler {
 	private final SubjectsCollectionAssembler subjectsCollectionAssembler;
+	private final StudentLinkFactory studentLinkFactory;
 
-	public StudentsAssembler(SubjectsCollectionAssembler subjectsCollectionAssembler) {
+	public StudentsAssembler(SubjectsCollectionAssembler subjectsCollectionAssembler,
+			StudentLinkFactory studentLinkFactory) {
 		this.subjectsCollectionAssembler = subjectsCollectionAssembler;
+		this.studentLinkFactory = studentLinkFactory;
 	}
 
 	public ResourceSupport toResource(Student student) {
 		StudentResource studentResource = new StudentResource(student);
-		studentResource.add(getLinks(student).collect(Collectors.toList()));
-		
-		Resources<ResourceSupport> subjectResource = subjectsCollectionAssembler.toResource(student.getSubjects());
-		studentResource.embedResource("studentSubjects", subjectResource);
-
+		studentResource.add(studentLinkFactory.getLinks(student));
+		studentResource.embedResource("studentSubjects", createEmbeddedSubjectResource(student));
 		return studentResource;
 	}
 	
 	public ResourceSupport toEmbeddedResource(Student student) {
 		ResourceSupport studentResource = new StudentResource(student);
-		studentResource.add(getEmbeddedLinks(student).collect(Collectors.toList()));
+		studentResource.add(studentLinkFactory.getEmbeddedLinks(student));
 		return studentResource;
 	}
 	
-	private Stream<Link> getLinks(Student student){
-		return Stream.of(
-				StudentLinkProvider.linkToStudent(student),
-				StudentLinkProvider.linkToStudentCollection());
-	}
-
-	private Stream<Link> getEmbeddedLinks(Student student){
-		return Stream.of(
-				StudentLinkProvider.linkToStudent(student),
-				StudentLinkProvider.linkToSubjectsCollection(student));
+	private Resources<ResourceSupport> createEmbeddedSubjectResource(Student student) {
+		return subjectsCollectionAssembler.toResource(student.getSubjects());
 	}
 }

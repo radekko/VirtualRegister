@@ -12,15 +12,16 @@ import org.springframework.hateoas.Resources;
 import org.springframework.stereotype.Component;
 
 import entities.Subject;
-import student.StudentLinkProvider;
 
 @Component
 public class SubjectsCollectionAssembler {
 
 	private final SubjectsAssembler subjectsAssembler;
-	
-	public SubjectsCollectionAssembler(SubjectsAssembler subjectsAssembler) {
+	private final SubjectLinkFactory subjectLinkFactory;
+
+	public SubjectsCollectionAssembler(SubjectsAssembler subjectsAssembler, SubjectLinkFactory subjectLinkFactory) {
 		this.subjectsAssembler = subjectsAssembler;
+		this.subjectLinkFactory = subjectLinkFactory;
 	}
 
 	public Resources<ResourceSupport> toResource(Set<Subject> set) {
@@ -34,7 +35,7 @@ public class SubjectsCollectionAssembler {
 	private List<Link> getLinks(Set<Subject> subjects){
 		List<Link> links = new ArrayList<>();
 		if(!subjects.isEmpty())
-			links.add(StudentLinkProvider.linkToSubjectsCollection(subjects.iterator().next().getStudent()));
+			links.add(subjectLinkFactory.getCollectionLink(subjects.iterator().next().getStudent()));
 		return links;
 	}
 }

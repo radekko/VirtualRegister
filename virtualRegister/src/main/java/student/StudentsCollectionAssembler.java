@@ -13,13 +13,15 @@ import entities.Student;
 public class StudentsCollectionAssembler {
 
 	private final StudentsAssembler studentsAssembler;
+	private final StudentLinkFactory linkFactory;
 
-	public StudentsCollectionAssembler(StudentsAssembler studentsAssembler) {
+	public StudentsCollectionAssembler(StudentsAssembler studentsAssembler, StudentLinkFactory linkFactory) {
 		this.studentsAssembler = studentsAssembler;
+		this.linkFactory = linkFactory;
 	}
 
 	public Resources<ResourceSupport> listToResource(List<Student> students) {
 		List<ResourceSupport> studentResources = students.stream().map(studentsAssembler::toEmbeddedResource).collect(Collectors.toList());
-		return new Resources<ResourceSupport>(studentResources, StudentLinkProvider.linkToStudentCollection());
+		return new Resources<ResourceSupport>(studentResources, linkFactory.getCollectionLink());
 	}
 }

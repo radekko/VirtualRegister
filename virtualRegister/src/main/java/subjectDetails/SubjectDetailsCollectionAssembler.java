@@ -12,13 +12,16 @@ import entities.SubjectDetails;
 @Component
 public class SubjectDetailsCollectionAssembler {
 	private final SubjectDetailsAssembler subjectDetailsAssembler;
+	private final SubjectDetailsLinkFactory subjectDetailsLinkFactory;
 
-	public SubjectDetailsCollectionAssembler(SubjectDetailsAssembler subjectDetailsAssembler) {
+	public SubjectDetailsCollectionAssembler(SubjectDetailsAssembler subjectDetailsAssembler,
+			SubjectDetailsLinkFactory subjectDetailsLinkFactory) {
 		this.subjectDetailsAssembler = subjectDetailsAssembler;
+		this.subjectDetailsLinkFactory = subjectDetailsLinkFactory;
 	}
-	
+
 	public Resources<ResourceSupport> listToResource(List<SubjectDetails> subjectDetails) {
 		List<ResourceSupport> studentResources = subjectDetails.stream().sorted().map(subjectDetailsAssembler::toEmbeddedResource).collect(Collectors.toList());
-		return new Resources<ResourceSupport>(studentResources, SubjectDetailsLinkProvider.linkToSubjectDetailsCollection());
+		return new Resources<ResourceSupport>(studentResources, subjectDetailsLinkFactory.getCollectionLink());
 	}
 }
