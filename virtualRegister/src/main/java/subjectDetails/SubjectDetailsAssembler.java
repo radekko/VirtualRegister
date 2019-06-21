@@ -20,9 +20,4 @@ public class SubjectDetailsAssembler {
 		return subjectDetailsResource;
 	}
 	
-	public ResourceSupport toEmbeddedResource(SubjectDetails subjectDetails) {
-		ResourceSupport subjectDetailsResource = new SubjectDetailsResource(subjectDetails);  
-		subjectDetailsResource.add(subjectDetailsLinkFactory.getEmbeddedLinks(subjectDetails));
-		return subjectDetailsResource;
-	}
 }

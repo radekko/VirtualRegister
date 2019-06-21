@@ -49,7 +49,7 @@ public class StudentController {
 
 	@GetMapping(produces = MediaType.APPLICATION_JSON_VALUE)
 	public HttpEntity<Resources<ResourceSupport>> getAllStudents() {
-		Resources<ResourceSupport> resources = studentsCollectionAssembler.listToResource(studentRepository.findAll());
+		Resources<ResourceSupport> resources = studentsCollectionAssembler.studentsCollectionToResource(studentRepository.findAll());
 		return ResponseEntity.ok().body(resources);
 	}
 	
@@ -64,9 +64,13 @@ public class StudentController {
 	
 	@PostMapping
 	public HttpEntity<Void> createNewStudent(@Valid @RequestBody NewStudent newStudent) throws URISyntaxException {
-		Student p = studentRepository.save(new Student(newStudent.getFirstName(),newStudent.getLastName()));
-		ResourceSupport res = studentsAssembler.toResource(p);
+		Student student = studentRepository.save(createDatabaseStudentEntity(newStudent));
+		ResourceSupport res = studentsAssembler.toResource(student);
 		return ResponseEntity.created(new URI(res.getId().expand().getHref())).build();
+	}
+
+	private Student createDatabaseStudentEntity(NewStudent newStudent) {
+		return new Student(newStudent.getFirstName(),newStudent.getLastName());
 	}
 	
 	@PutMapping(value="/{studentId}/subjects")
@@ -83,7 +87,7 @@ public class StudentController {
 						   .findBySubjectName(subjectName)
 						   .orElseThrow(() -> new EntityNotExistException(subjectName));
 		
-		student.addSubjects(new Subject(sd,student));
+		student.addSubject(new Subject(sd,student));
 		return ResponseEntity.noContent().build();
 	}
 

@@ -1,6 +1,7 @@
 package student.subject;
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
 import java.util.Set;
 import java.util.TreeSet;
@@ -16,23 +17,28 @@ import entities.Subject;
 @Component
 public class SubjectsCollectionAssembler {
 
-	private final SubjectsAssembler subjectsAssembler;
 	private final SubjectLinkFactory subjectLinkFactory;
 
-	public SubjectsCollectionAssembler(SubjectsAssembler subjectsAssembler, SubjectLinkFactory subjectLinkFactory) {
-		this.subjectsAssembler = subjectsAssembler;
+	public SubjectsCollectionAssembler(SubjectLinkFactory subjectLinkFactory) {
 		this.subjectLinkFactory = subjectLinkFactory;
 	}
 
-	public Resources<ResourceSupport> toResource(Set<Subject> set) {
-		Set<Subject> sortedSubjects = new TreeSet<>(set);
-		List<ResourceSupport> subjectResourcesList = 
-				sortedSubjects.stream().map(subjectsAssembler::toEmbeddedResource).collect(Collectors.toList());
-		
-		return new Resources<ResourceSupport>(subjectResourcesList,getLinks(set));
+	public Resources<ResourceSupport> subjectsCollectionToResource(Set<Subject> subjectsSet) {
+		return new Resources<ResourceSupport>(createSubjectsResource(subjectsSet),getLinksToCollection(subjectsSet));
 	}
 	
-	private List<Link> getLinks(Set<Subject> subjects){
+	private List<ResourceSupport> createSubjectsResource(Set<Subject> subjects){
+		Set<Subject> sortedSubjects = new TreeSet<>(subjects);
+		return sortedSubjects.stream().map(this::collectionElementToResource).collect(Collectors.toList());
+	}
+	
+	private ResourceSupport collectionElementToResource(Subject subject) {
+		ResourceSupport subjectResource = new SubjectResource(subject);
+		subjectResource.add(subjectLinkFactory.getEmbeddedLinks(subject));
+		return subjectResource;
+	}
+	
+	private List<Link> getLinksToCollection(Collection<Subject> subjects){
 		List<Link> links = new ArrayList<>();
 		if(!subjects.isEmpty())
 			links.add(subjectLinkFactory.getCollectionLink(subjects.iterator().next().getStudent()));

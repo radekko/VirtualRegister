@@ -10,6 +10,7 @@ import entities.SubjectDetails;
 
 @Component
 public class SubjectDetailsLinkFactory {
+	
 	public Link getCollectionLink() {
 		return SubjectDetailsLinkProvider.linkToSubjectDetailsCollection();
 	}

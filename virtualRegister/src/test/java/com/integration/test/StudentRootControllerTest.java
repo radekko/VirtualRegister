@@ -79,9 +79,9 @@ public abstract class StudentRootControllerTest extends AbstractControllerTest{
 		Subject subject2 = new Subject(sd2, Arrays.asList(Mark.FOUR, Mark.FOUR_AND_HALF, Mark.FIVE),student);
 		Subject subject3 = new Subject(sd2, Arrays.asList(Mark.TWO, Mark.THREE, Mark.THREE),student2);
 		
-		student.addSubjects(subject);
-		student.addSubjects(subject2);
-		student2.addSubjects(subject3);
+		student.addSubject(subject);
+		student.addSubject(subject2);
+		student2.addSubject(subject3);
 		
 		studentRepository.saveAll(Arrays.asList(student,student2));
 		subjectDetailsRepository.save(sd3);

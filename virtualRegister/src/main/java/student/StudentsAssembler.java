@@ -25,13 +25,7 @@ public class StudentsAssembler {
 		return studentResource;
 	}
 	
-	public ResourceSupport toEmbeddedResource(Student student) {
-		ResourceSupport studentResource = new StudentResource(student);
-		studentResource.add(studentLinkFactory.getEmbeddedLinks(student));
-		return studentResource;
-	}
-	
 	private Resources<ResourceSupport> createEmbeddedSubjectResource(Student student) {
-		return subjectsCollectionAssembler.toResource(student.getSubjects());
+		return subjectsCollectionAssembler.subjectsCollectionToResource(student.getSubjects());
 	}
 }

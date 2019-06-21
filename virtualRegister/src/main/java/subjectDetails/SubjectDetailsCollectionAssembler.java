@@ -11,17 +11,21 @@ import entities.SubjectDetails;
 
 @Component
 public class SubjectDetailsCollectionAssembler {
-	private final SubjectDetailsAssembler subjectDetailsAssembler;
+	
 	private final SubjectDetailsLinkFactory subjectDetailsLinkFactory;
 
-	public SubjectDetailsCollectionAssembler(SubjectDetailsAssembler subjectDetailsAssembler,
-			SubjectDetailsLinkFactory subjectDetailsLinkFactory) {
-		this.subjectDetailsAssembler = subjectDetailsAssembler;
+	public SubjectDetailsCollectionAssembler(SubjectDetailsLinkFactory subjectDetailsLinkFactory) {
 		this.subjectDetailsLinkFactory = subjectDetailsLinkFactory;
 	}
 
-	public Resources<ResourceSupport> listToResource(List<SubjectDetails> subjectDetails) {
-		List<ResourceSupport> studentResources = subjectDetails.stream().sorted().map(subjectDetailsAssembler::toEmbeddedResource).collect(Collectors.toList());
+	public Resources<ResourceSupport> subjectDetailsCollectionToResource(List<SubjectDetails> subjectDetails) {
+		List<ResourceSupport> studentResources = subjectDetails.stream().sorted().map(this::collectionElementToResource).collect(Collectors.toList());
 		return new Resources<ResourceSupport>(studentResources, subjectDetailsLinkFactory.getCollectionLink());
+	}
+	
+	private ResourceSupport collectionElementToResource(SubjectDetails subjectDetails) {
+		ResourceSupport subjectDetailsResource = new SubjectDetailsResource(subjectDetails);  
+		subjectDetailsResource.add(subjectDetailsLinkFactory.getEmbeddedLinks(subjectDetails));
+		return subjectDetailsResource;
 	}
 }

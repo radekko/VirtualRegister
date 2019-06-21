@@ -39,7 +39,7 @@ public class SubjectController {
 
 	@GetMapping(produces = MediaType.APPLICATION_JSON_VALUE)
 	public HttpEntity<Resources<ResourceSupport>> getSubjectsForStudent(@PathVariable Long studentId) throws EntityNotExistException {
-		Resources<ResourceSupport> subjectResources = subjectsCollectionAssembler.toResource(subjectRepository.findByStudentId(studentId));
+		Resources<ResourceSupport> subjectResources = subjectsCollectionAssembler.subjectsCollectionToResource(subjectRepository.findByStudentId(studentId));
 		return ResponseEntity.ok().body(subjectResources);
 	}
 

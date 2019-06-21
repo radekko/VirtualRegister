@@ -41,7 +41,7 @@ public class SubjectDetailsController {
 
 	@GetMapping(produces = MediaType.APPLICATION_JSON_VALUE)
 	public HttpEntity<Resources<ResourceSupport>> getAllSubjectsDetails() {
-		Resources<ResourceSupport> resources = subjectDetailsCollectionAssembler.listToResource(subjectDetailsRepository.findAll());
+		Resources<ResourceSupport> resources = subjectDetailsCollectionAssembler.subjectDetailsCollectionToResource(subjectDetailsRepository.findAll());
 		return ResponseEntity.ok().body(resources);
 	}
 	
@@ -58,8 +58,20 @@ public class SubjectDetailsController {
 	}
 	
 	@PostMapping
-	public HttpEntity<Void> addSubjectDetails(@Valid @RequestBody NewSubjectDetails newSubjectDetails) throws URISyntaxException {
-		SubjectDetails s = subjectDetailsRepository.save(new SubjectDetails(newSubjectDetails.getSubjectName(),newSubjectDetails.getEcts()));
-		ResourceSupport res = subjectDetailsAssembler.toResource(s);
+	public HttpEntity<Void> createSubjectDetails(@Valid @RequestBody NewSubjectDetails newSubjectDetails) throws URISyntaxException {
+		ResourceSupport res = createNewResource(newSubjectDetails);
 		return ResponseEntity.created(new URI(res.getId().expand().getHref())).build();
+	}
+
+	private ResourceSupport createNewResource(NewSubjectDetails newSubjectDetails) {
+		SubjectDetails storedNewSubjectDetails = storeSubjectDetails(newSubjectDetails);
+		return subjectDetailsAssembler.toResource(storedNewSubjectDetails);
+	}
+
+	private SubjectDetails storeSubjectDetails(NewSubjectDetails newSubjectDetails) {
+		return subjectDetailsRepository.save(createSubjectDetailsDatabaseEntity(newSubjectDetails));
+	}
+
+	private SubjectDetails createSubjectDetailsDatabaseEntity(NewSubjectDetails newSubjectDetails) {
+		return new SubjectDetails(newSubjectDetails.getSubjectName(),newSubjectDetails.getEcts());
 	}}

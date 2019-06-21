@@ -16,21 +16,7 @@ public class SubjectsAssembler {
 
 	public ResourceSupport toResource(Subject subject) {
 		ResourceSupport subjectResource = new SubjectResource(subject);
-		if(isSubjectIsAssignedToStudent(subject)) 
-			subjectResource.add(subjectLinkFactory.getLinks(subject));
-			
+		subjectResource.add(subjectLinkFactory.getLinks(subject));
 		return subjectResource;
-	}
-	
-	public ResourceSupport toEmbeddedResource(Subject subject) {
-		ResourceSupport subjectResource = new SubjectResource(subject);
-		if(isSubjectIsAssignedToStudent(subject))
-			subjectResource.add(subjectLinkFactory.getEmbeddedLinks(subject));
-		
-		return subjectResource;
-	}
-	
-	private boolean isSubjectIsAssignedToStudent(Subject subject) {
-		return subject.getStudent() != null;
 	}
 }
